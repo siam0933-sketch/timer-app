@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- iOS PWA 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="타이머">
+
+  <!-- Android PWA 설정 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#282c34">
+
+  <!-- PWA Display 모드 -->
+  <meta name="display" content="standalone">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <title>타이머 앱</title>
+  <style>
+    /* ========== 기본 스타일 초기화 ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+      touch-action: manipulation;
+      user-select: none;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* ========== 메인 화면 ========== */
+    #mainScreen {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    #settingsBtn {
+      position: absolute;
+      top: min(5vw, 30px);
+      right: min(5vw, 30px);
+      width: clamp(50px, 12vw, 70px);
+      height: clamp(50px, 12vw, 70px);
+      font-size: clamp(24px, 6vw, 32px);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    #settingsBtn:hover {
+      background: rgba(255,255,255,0.25);
+      transform: rotate(90deg);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    #settingsBtn:active {
+      transform: scale(0.92) rotate(90deg);
+    }
+
+    .clock-container {
+      text-align: center;
+      padding: 20px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #dateDisplay {
+      font-size: clamp(24px, 6vw, 100px);
+      margin-bottom: 15px;
+      opacity: 0.95;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #timeDisplay {
+      font-size: clamp(60px, 15vw, 200px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .time-ampm, .time-seconds {
+      font-size: 50%;
+      opacity: 0.85;
+      font-weight: 400;
+    }
+
+    /* ========== 타이머 카드 오버레이 ========== */
+    #timerCardsOverlay {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      z-index: 100;
+      pointer-events: none;
+      background: rgba(0,0,0,0);
+      transition: background 0.3s ease;
+    }
+
+    #timerCardsOverlay.show {
+      display: block;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(5px);
+    }
+
+    .cards-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      max-height: 75vh;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 30px 30px 0 0;
+      padding: min(6vw, 30px);
+      padding-top: 20px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+    }
+
+    #timerCardsOverlay.show .cards-container {
+      transform: translateY(0);
+    }
+
+    .cards-container::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 4px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 2px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(140px, 28vw), 1fr));
+      gap: min(4vw, 20px);
+      margin-top: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+      }
+    }
+
+    .timer-card {
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 20px;
+      padding: min(3vw, 15px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+      backdrop-filter: blur(10px);
+      gap: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      border: 1px solid rgba(102,126,234,0.2);
+    }
+
+    .timer-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+    }
+
+    .timer-card:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+
+    .timer-card.add-card {
+      border: 2px dashed rgba(102,126,234,0.4);
+      font-size: clamp(40px, 12vw, 80px);
+      color: rgba(102,126,234,0.6);
+      background: rgba(102,126,234,0.05);
+      font-weight: 300;
+    }
+
+    .timer-card.add-card:hover {
+      border-color: rgba(102,126,234,0.6);
+      color: rgba(102,126,234,0.8);
+      background: rgba(102,126,234,0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
+
+    .card-name {
+      font-weight: 700;
+      font-size: clamp(13px, 3.2vw, 18px);
+      color: #2d3748;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      flex: 1;
+      line-height: 1.3;
+      padding-top: 2px;
+    }
+
+    .card-menu-btn {
+      background: rgba(102,126,234,0.1);
+      border: none;
+      font-size: clamp(18px, 4.5vw, 24px);
+      cursor: pointer;
+      padding: 4px;
+      min-width: clamp(28px, 7vw, 36px);
+      width: clamp(28px, 7vw, 36px);
+      height: clamp(28px, 7vw, 36px);
+      color: #667eea;
+      border-radius: 8px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card-menu-btn:hover {
+      background: rgba(102,126,234,0.2);
+      transform: scale(1.08);
+    }
+
+    .card-menu-btn:active {
+      transform: scale(0.92);
+    }
+
+    .card-info {
+      font-size: clamp(11px, 2.8vw, 16px);
+      color: #4a5568;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* ========== 모달 ========== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      padding: min(6vw, 30px);
+      width: 100%;
+      max-width: 500px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(102,126,234,0.1);
+    }
+
+    .modal-title {
+      font-size: clamp(20px, 5vw, 26px);
+      font-weight: 700;
+      color: #2d3748;
+      letter-spacing: -0.5px;
+    }
+
+    .close-btn {
+      background: rgba(102,126,234,0.1);
+      border: none;
+      font-size: clamp(24px, 6vw, 32px);
+      cursor: pointer;
+      padding: 0;
+      width: clamp(40px, 10vw, 48px);
+      height: clamp(40px, 10vw, 48px);
+      border-radius: 12px;
+      color: #667eea;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: rgba(102,126,234,0.2);
+      transform: scale(1.05);
+    }
+
+    .close-btn:active {
+      transform: scale(0.95);
+    }
+
+    .setting-section {
+      margin-bottom: 25px;
+    }
+
+    .setting-section.inline {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .setting-section.inline .setting-label {
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+
+    .setting-section.inline input[type="number"] {
+      margin-bottom: 0;
+      max-width: 150px;
+    }
+
+    @media (max-width: 767px) {
+      .setting-section.inline input[type="number"] {
+        max-width: 120px;
+      }
+    }
+
+    .setting-label {
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: block;
+      font-size: clamp(15px, 4vw, 18px);
+      color: #2d3748;
+      letter-spacing: -0.3px;
+    }
+
+    /* ========== 시간 선택기 ========== */
+    .time-picker {
+      display: flex;
+      gap: clamp(6px, 2vw, 10px);
+      align-items: center;
+      margin-bottom: 15px;
+      justify-content: center;
+    }
+
+    .time-digit {
+      width: clamp(50px, 12vw, 65px);
+      height: clamp(60px, 14vw, 75px);
+      font-size: clamp(28px, 7vw, 36px);
+      font-weight: 700;
+      text-align: center;
+      border: 2px solid rgba(102,126,234,0.3);
+      border-radius: 12px;
+      background: rgba(102,126,234,0.05);
+      color: #2d3748;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding: 0;
+      transition: all 0.2s;
+    }
+
+    .time-digit:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+      transform: scale(1.05);
+    }
+
+    .time-digit:hover {
+      border-color: #667eea;
+      background: rgba(102,126,234,0.08);
+    }
+
+    .time-separator {
+      font-size: clamp(28px, 7vw, 36px);
+      font-weight: 700;
+      margin: 0 clamp(3px, 1vw, 8px);
+      color: #667eea;
+    }
+
+    /* ========== 소리 선택 ========== */
+    .sound-select-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .sound-select-item {
+      flex: 1;
+    }
+
+    .sound-select-item label {
+      font-size: 12px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    @media (orientation: portrait) {
+      .sound-select-item label {
+        font-size: 16px;
+      }
+    }
+
+    .sound-select-item select {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      border: 2px solid #007AFF;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+    }
+
+    @media (orientation: portrait) {
+      .sound-select-item select {
+        padding: 16px;
+        font-size: 18px;
+      }
+    }
+
+    .color-picker-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .color-picker-item {
+      flex: 1;
+      position: relative;
+    }
+
+    .color-picker-item label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 3px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    @media (orientation: portrait) {
+      .color-picker-item label {
+        font-size: 18px;
+      }
+    }
+
+    .color-picker-item input[type="color"] {
+      width: 100%;
+      height: 60px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    @media (orientation: portrait) {
+      .color-picker-item input[type="color"] {
+        height: 70px;
+      }
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: clamp(12px, 3vw, 16px);
+      font-size: clamp(15px, 4vw, 18px);
+      border: 2px solid rgba(102,126,234,0.2);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: rgba(102,126,234,0.03);
+      color: #2d3748;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    input[type="text"]:hover, input[type="number"]:hover {
+      border-color: #667eea;
+    }
+
+    .slider-container {
+      margin: 10px 0;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 40px;
+    }
+
+    @media (orientation: portrait) {
+      input[type="range"] {
+        height: 50px;
+      }
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+
+    @media (orientation: portrait) {
+      .checkbox-container {
+        font-size: 18px;
+      }
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    @media (orientation: portrait) {
+      .checkbox-container input[type="checkbox"] {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .file-upload-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #eee;
+    }
+
+    .file-upload-btn {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      border: 2px dashed #007AFF;
+      border-radius: 10px;
+      background: #f0f8ff;
+      color: #007AFF;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+      display: block;
+      text-align: center;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: clamp(10px, 2.5vw, 15px);
+      margin-top: 25px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: clamp(14px, 3.5vw, 18px);
+      font-size: clamp(15px, 4vw, 18px);
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      letter-spacing: -0.3px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #e082ea 0%, #e4465b 100%);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #a8a8a8 0%, #8e8e8e 100%);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #979797 0%, #7d7d7d 100%);
+    }
+
+    /* ========== 타이머 실행 화면 ========== */
+    #timerScreen {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #timerScreen.show {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    #timerScreen.paused {
+      filter: blur(8px) brightness(0.6);
+    }
+
+    #timerSettingsBtn {
+      position: absolute;
+      top: min(5vw, 30px);
+      right: min(5vw, 30px);
+      width: clamp(50px, 12vw, 70px);
+      height: clamp(50px, 12vw, 70px);
+      font-size: clamp(24px, 6vw, 32px);
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    #timerSettingsBtn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: rotate(90deg);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    #timerSettingsBtn:active {
+      transform: scale(0.92) rotate(90deg);
+    }
+
+    .pause-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 250;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .pause-overlay.show {
+      display: flex;
+    }
+
+    .pause-text {
+      font-size: 80px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 20px rgba(0,0,0,0.8);
+      margin-bottom: 20px;
+    }
+
+    .current-time-small {
+      position: absolute;
+      top: min(5vw, 30px);
+      text-align: center;
+      font-size: clamp(24px, 5vw, 50px);
+      padding: clamp(8px, 2vw, 12px) clamp(15px, 4vw, 25px);
+      border-radius: 15px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.15);
+      font-weight: 600;
+      color: white !important;
+    }
+
+    .timer-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(15px, 3vw, 25px);
+      padding: 20px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    .timer-main-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(15px, 4vw, 35px);
+      flex-wrap: wrap;
+    }
+
+    .timer-phase {
+      font-size: clamp(32px, 7vw, 60px);
+      font-weight: 800;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      letter-spacing: -1px;
+    }
+
+    .timer-round {
+      font-size: clamp(32px, 7vw, 60px);
+      font-weight: 800;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      letter-spacing: -1px;
+    }
+
+    #timerTime {
+      font-size: clamp(80px, 20vw, 220px);
+      font-weight: 800;
+      line-height: 1;
+      text-shadow: 0 6px 30px rgba(0,0,0,0.25);
+      letter-spacing: -3px;
+    }
+
+    .timer-name {
+      font-size: clamp(28px, 6vw, 55px);
+      font-weight: 700;
+      opacity: 0.9;
+      margin-top: 10px;
+      text-shadow: 0 2px 15px rgba(0,0,0,0.15);
+      letter-spacing: -0.5px;
+    }
+
+    .stop-guide {
+      position: relative;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: clamp(12px, 3vw, 18px) clamp(20px, 5vw, 30px);
+      border-radius: 20px;
+      font-size: clamp(18px, 4.5vw, 32px);
+      display: none;
+      z-index: 300;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .stop-guide.show {
+      display: block;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+
+    .progress-circle {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px;
+      height: 120px;
+      display: none;
+      z-index: 300;
+    }
+
+    .progress-circle.show {
+      display: block;
+      animation: rotate 1s linear;
+    }
+
+    .progress-circle circle {
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 10;
+      stroke-dasharray: 339;
+      stroke-dashoffset: 339;
+      transform-origin: center;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));
+    }
+
+    .progress-circle.filling circle {
+      animation: fillProgress 1s linear forwards;
+    }
+
+    @keyframes fillProgress {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes rotate {
+      from {
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+      to {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: clamp(30px, 8vw, 50px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: clamp(12px, 3vw, 16px) clamp(20px, 5vw, 30px);
+      border-radius: 20px;
+      font-size: clamp(14px, 3.5vw, 16px);
+      display: none;
+      z-index: 400;
+      animation: toastSlideIn 3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    @keyframes toastSlideIn {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      10%, 90% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+    }
+
+    .toast.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="mainScreen">
+    <button id="settingsBtn">⚙️</button>
+    <div class="clock-container">
+      <div id="dateDisplay"></div>
+      <div id="timeDisplay">
+        <span class="time-ampm" id="ampm"></span>
+        <span id="hours"></span>:<span id="minutes"></span>
+        <span class="time-seconds" id="seconds"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="timerCardsOverlay">
+    <div class="cards-container">
+      <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+  </div>
+
+  <div id="timerScreen">
+    <button id="timerSettingsBtn">⚙️</button>
+    <div class="current-time-small" id="currentTimeSmall"></div>
+    <div class="timer-display">
+      <div class="timer-main-row">
+        <span class="timer-phase" id="timerPhase">준비</span>
+        <div id="timerTime">
+          <span id="timerMinutes">00</span>:<span id="timerSeconds">00</span>
+        </div>
+        <span class="timer-round" id="timerRound">1/3</span>
+      </div>
+      <div class="timer-name" id="timerName">타이머 1</div>
+    </div>
+  </div>
+
+  <div class="pause-overlay" id="pauseOverlay">
+    <div class="pause-text">일시정지</div>
+    <div class="stop-guide" id="stopGuide">길게 누르면 종료</div>
+  </div>
+
+  <svg class="progress-circle" id="progressCircle" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="54"></circle>
+  </svg>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal" id="timerSettingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">타이머 설정</div>
+        <button class="close-btn" onclick="closeTimerSettings()">×</button>
+      </div>
+      
+      <div class="setting-section">
+        <label class="setting-label">타이머 이름</label>
+        <input type="text" id="timerNameInput" placeholder="타이머 이름">
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">준비 시간</label>
+        <div class="time-picker">
+          <select class="time-digit" id="prepareMin1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <select class="time-digit" id="prepareMin2">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <span class="time-separator">:</span>
+          <select class="time-digit" id="prepareSec1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <select class="time-digit" id="prepareSec2">
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+        <div class="color-picker-group">
+          <div class="color-picker-item">
+            <label>배경색</label>
+            <input type="color" id="prepareBg" value="#FFA500">
+          </div>
+          <div class="color-picker-item">
+            <label>글자색</label>
+            <input type="color" id="prepareColor" value="#FFFFFF">
+          </div>
+        </div>
+        <div class="sound-select-group">
+          <div class="sound-select-item">
+            <label>시작음</label>
+            <select id="prepareStartSound">
+              <option value="none">무음</option>
+              <option value="default" selected>기본음</option>
+              <option value="beep">삐</option>
+              <option value="bell">딩동</option>
+            </select>
+          </div>
+          <div class="sound-select-item">
+            <label>종료음</label>
+            <select id="prepareEndSound">
+              <option value="none">무음</option>
+              <option value="default">기본음</option>
+              <option value="beep" selected>삐</option>
+              <option value="bell">딩동</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">운동 시간</label>
+        <div class="time-picker">
+          <select class="time-digit" id="workMin1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <select class="time-digit" id="workMin2">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <span class="time-separator">:</span>
+          <select class="time-digit" id="workSec1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <select class="time-digit" id="workSec2">
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+        <div class="color-picker-group">
+          <div class="color-picker-item">
+            <label>배경색</label>
+            <input type="color" id="workBg" value="#FF0000">
+          </div>
+          <div class="color-picker-item">
+            <label>글자색</label>
+            <input type="color" id="workColor" value="#FFFFFF">
+          </div>
+        </div>
+        <div class="sound-select-group">
+          <div class="sound-select-item">
+            <label>시작음</label>
+            <select id="workStartSound">
+              <option value="none">무음</option>
+              <option value="default" selected>기본음</option>
+              <option value="beep">삐</option>
+              <option value="bell">딩동</option>
+            </select>
+          </div>
+          <div class="sound-select-item">
+            <label>종료음</label>
+            <select id="workEndSound">
+              <option value="none">무음</option>
+              <option value="default">기본음</option>
+              <option value="beep" selected>삐</option>
+              <option value="bell">딩동</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">휴식 시간</label>
+        <div class="time-picker">
+          <select class="time-digit" id="restMin1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <select class="time-digit" id="restMin2">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <span class="time-separator">:</span>
+          <select class="time-digit" id="restSec1">
+            <option value="0">0</option>
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <select class="time-digit" id="restSec2">
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+        <div class="color-picker-group">
+          <div class="color-picker-item">
+            <label>배경색</label>
+            <input type="color" id="restBg" value="#00FF00">
+          </div>
+          <div class="color-picker-item">
+            <label>글자색</label>
+            <input type="color" id="restColor" value="#000000">
+          </div>
+        </div>
+        <div class="sound-select-group">
+          <div class="sound-select-item">
+            <label>시작음</label>
+            <select id="restStartSound">
+              <option value="none">무음</option>
+              <option value="default" selected>기본음</option>
+              <option value="beep">삐</option>
+              <option value="bell">딩동</option>
+            </select>
+          </div>
+          <div class="sound-select-item">
+            <label>종료음</label>
+            <select id="restEndSound">
+              <option value="none">무음</option>
+              <option value="default">기본음</option>
+              <option value="beep" selected>삐</option>
+              <option value="bell">딩동</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-section inline">
+        <label class="setting-label">라운드</label>
+        <input type="number" id="rounds" min="1" max="99" value="3">
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">볼륨</label>
+        <div class="slider-container">
+          <input type="range" id="volume" min="0" max="100" value="50">
+        </div>
+      </div>
+
+      <div class="file-upload-section">
+        <label class="setting-label">커스텀 음원 추가</label>
+        <input type="file" id="customSoundFile" accept="audio/*" multiple>
+        <label for="customSoundFile" class="file-upload-btn">📁 음원 파일 업로드</label>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-danger" onclick="deleteTimer()">삭제</button>
+        <button class="btn btn-secondary" onclick="copyTimer()">복사</button>
+        <button class="btn btn-primary" onclick="saveTimer()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="globalSettingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">현재시간 설정</div>
+        <button class="close-btn" onclick="closeGlobalSettings()">×</button>
+      </div>
+      
+      <div class="setting-section">
+        <label class="setting-label">날짜 크기 (%)</label>
+        <div class="slider-container">
+          <input type="range" id="dateSize" min="50" max="200" value="100">
+          <div id="dateSizeValue">100%</div>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">시계 크기 (%)</label>
+        <div class="slider-container">
+          <input type="range" id="clockSize" min="50" max="200" value="100">
+          <div id="clockSizeValue">100%</div>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">배경 그라데이션</label>
+        <div class="color-picker-group">
+          <div class="color-picker-item">
+            <label>시작색</label>
+            <input type="color" id="bgGradientStart" value="#667eea">
+          </div>
+          <div class="color-picker-item">
+            <label>끝색</label>
+            <input type="color" id="bgGradientEnd" value="#764ba2">
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">글자색</label>
+        <div class="color-picker-group">
+          <div class="color-picker-item">
+            <label>글자색</label>
+            <input type="color" id="fontColor" value="#ffffff">
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">화면 꺼짐 방지</label>
+        <div class="checkbox-container">
+          <input type="checkbox" id="keepScreenOn" checked>
+          <label for="keepScreenOn">타이머 실행 중 화면 유지</label>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">소리</label>
+        <div class="checkbox-container">
+          <input type="checkbox" id="soundEnabled" checked>
+          <label for="soundEnabled">소리 재생</label>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">진동</label>
+        <div class="checkbox-container">
+          <input type="checkbox" id="vibrationEnabled" checked>
+          <label for="vibrationEnabled">진동 피드백</label>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="saveGlobalSettings()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="timerScreenSettingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">타이머 화면 설정</div>
+        <button class="close-btn" onclick="closeTimerScreenSettings()">×</button>
+      </div>
+      
+      <div class="setting-section">
+        <label class="setting-label">숫자 크기 (%)</label>
+        <div class="slider-container">
+          <input type="range" id="timerNumberSize" min="50" max="200" value="100">
+          <div id="timerNumberSizeValue">100%</div>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label">글자 크기 (%)</label>
+        <div class="slider-container">
+          <input type="range" id="timerTextSize" min="50" max="200" value="100">
+          <div id="timerTextSizeValue">100%</div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="saveTimerScreenSettings()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let timers = [];
+    let currentTimerId = null;
+    let runningTimer = null;
+    let timerInterval = null;
+    let isPaused = false;
+    let longPressTimer = null;
+    let audioContext = null;
+    let wakeLock = null;
+    let customSounds = {};
+
+    let globalSettings = {
+      dateSize: 100,
+      clockSize: 100,
+      bgGradientStart: '#667eea',
+      bgGradientEnd: '#764ba2',
+      fontColor: '#ffffff',
+      keepScreenOn: true,
+      soundEnabled: true,
+      vibrationEnabled: true
+    };
+
+    let timerScreenSettings = {
+      numberSize: 100,
+      textSize: 100
+    };
+
+    window.addEventListener('load', () => {
+      loadSettings();
+      loadTimerScreenSettings();
+      loadTimers();
+      renderCards();
+      updateClock();
+      setInterval(updateClock, 1000);
+      setupEventListeners();
+      setTimeout(() => applyGlobalSettings(), 100);
+      // AudioContext는 사용자 인터랙션 후에 초기화
+
+      // Service Worker 등록 (PWA)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker 등록 성공:', registration);
+          })
+          .catch((error) => {
+            console.log('Service Worker 등록 실패:', error);
+          });
+      }
+    });
+
+    function setupEventListeners() {
+      document.getElementById('mainScreen').addEventListener('click', toggleTimerCards);
+      document.getElementById('timerCardsOverlay').addEventListener('click', function(e) {
+        if (e.target === this) hideTimerCards();
+      });
+      document.getElementById('timerScreen').addEventListener('click', handleTimerScreenClick);
+      document.getElementById('pauseOverlay').addEventListener('click', handlePauseOverlayClick);
+      document.getElementById('settingsBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        showGlobalSettings();
+      });
+      document.getElementById('timerSettingsBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        showTimerScreenSettings();
+      });
+      document.getElementById('pauseOverlay').addEventListener('touchstart', handleLongPressStart);
+      document.getElementById('pauseOverlay').addEventListener('touchend', handleLongPressEnd);
+      document.getElementById('pauseOverlay').addEventListener('mousedown', handleLongPressStart);
+      document.getElementById('pauseOverlay').addEventListener('mouseup', handleLongPressEnd);
+      document.getElementById('customSoundFile').addEventListener('change', handleCustomSoundUpload);
+    }
+
+
+    function updateClock() {
+      const now = new Date();
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const day = days[now.getDay()];
+      document.getElementById('dateDisplay').textContent = year + '.' + month + '.' + date + ' ' + day + '요일';
+      let hours = now.getHours();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('ampm').textContent = ampm + ' ';
+      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('minutes').textContent = minutes;
+      document.getElementById('seconds').textContent = ' ' + seconds;
+      if (document.getElementById('timerScreen').classList.contains('show')) {
+        document.getElementById('currentTimeSmall').textContent = ampm + ' ' + String(hours).padStart(2, '0') + ':' + minutes;
+      }
+    }
+
+    function applyGlobalSettings() {
+      const dateEl = document.getElementById('dateDisplay');
+      if (dateEl) dateEl.style.fontSize = globalSettings.dateSize + 'px';
+      const timeEl = document.getElementById('timeDisplay');
+      if (timeEl) timeEl.style.fontSize = (globalSettings.clockSize * 2) + 'px';
+      // timerTime은 여기서 설정하지 않음 (타이머 화면 설정과 독립)
+      const gradient = 'linear-gradient(135deg, ' + globalSettings.bgGradientStart + ' 0%, ' + globalSettings.bgGradientEnd + ' 100%)';
+      document.getElementById('mainScreen').style.background = gradient;
+      document.getElementById('mainScreen').style.color = globalSettings.fontColor;
+      // body 배경도 동일하게 적용
+      document.body.style.background = gradient;
+    }
+
+    function showGlobalSettings() {
+      document.getElementById('dateSize').value = globalSettings.dateSize;
+      document.getElementById('dateSizeValue').textContent = globalSettings.dateSize + '%';
+      document.getElementById('clockSize').value = globalSettings.clockSize;
+      document.getElementById('clockSizeValue').textContent = globalSettings.clockSize + '%';
+      document.getElementById('bgGradientStart').value = globalSettings.bgGradientStart;
+      document.getElementById('bgGradientEnd').value = globalSettings.bgGradientEnd;
+      document.getElementById('fontColor').value = globalSettings.fontColor;
+      document.getElementById('keepScreenOn').checked = globalSettings.keepScreenOn;
+      document.getElementById('soundEnabled').checked = globalSettings.soundEnabled;
+      document.getElementById('vibrationEnabled').checked = globalSettings.vibrationEnabled;
+      document.getElementById('globalSettingsModal').classList.add('show');
+
+      document.getElementById('dateSize').oninput = function() {
+        document.getElementById('dateSizeValue').textContent = this.value + '%';
+        document.getElementById('dateDisplay').style.fontSize = this.value + 'px';
+      };
+      document.getElementById('clockSize').oninput = function() {
+        document.getElementById('clockSizeValue').textContent = this.value + '%';
+        document.getElementById('timeDisplay').style.fontSize = (this.value * 2) + 'px';
+      };
+
+      // 그라데이션 실시간 미리보기
+      const updateGradient = function() {
+        const startColor = document.getElementById('bgGradientStart').value;
+        const endColor = document.getElementById('bgGradientEnd').value;
+        const gradient = 'linear-gradient(135deg, ' + startColor + ' 0%, ' + endColor + ' 100%)';
+        document.getElementById('mainScreen').style.background = gradient;
+        document.body.style.background = gradient;
+      };
+
+      document.getElementById('bgGradientStart').oninput = updateGradient;
+      document.getElementById('bgGradientEnd').oninput = updateGradient;
+
+      document.getElementById('fontColor').oninput = function() {
+        document.getElementById('mainScreen').style.color = this.value;
+      };
+    }
+
+    function closeGlobalSettings() {
+      document.getElementById('globalSettingsModal').classList.remove('show');
+    }
+
+    function saveGlobalSettings() {
+      globalSettings.dateSize = parseInt(document.getElementById('dateSize').value);
+      globalSettings.clockSize = parseInt(document.getElementById('clockSize').value);
+      globalSettings.bgGradientStart = document.getElementById('bgGradientStart').value;
+      globalSettings.bgGradientEnd = document.getElementById('bgGradientEnd').value;
+      globalSettings.fontColor = document.getElementById('fontColor').value;
+      globalSettings.keepScreenOn = document.getElementById('keepScreenOn').checked;
+      globalSettings.soundEnabled = document.getElementById('soundEnabled').checked;
+      globalSettings.vibrationEnabled = document.getElementById('vibrationEnabled').checked;
+      localStorage.setItem('globalSettings', JSON.stringify(globalSettings));
+      applyGlobalSettings();
+      closeGlobalSettings();
+      showToast('설정이 저장되었습니다');
+    }
+
+    function toggleTimerCards() {
+      const overlay = document.getElementById('timerCardsOverlay');
+      if (overlay.classList.contains('show')) {
+        hideTimerCards();
+      } else {
+        showTimerCards();
+      }
+    }
+
+    function showTimerCards() {
+      document.getElementById('timerCardsOverlay').classList.add('show');
+    }
+
+    function hideTimerCards() {
+      document.getElementById('timerCardsOverlay').classList.remove('show');
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+      timers.forEach(timer => {
+        const card = createTimerCard(timer);
+        grid.appendChild(card);
+      });
+      const addCard = document.createElement('div');
+      addCard.className = 'timer-card add-card';
+      addCard.innerHTML = '+';
+      addCard.onclick = () => addNewTimer();
+      grid.appendChild(addCard);
+    }
+
+    function createTimerCard(timer) {
+      const card = document.createElement('div');
+      card.className = 'timer-card';
+      card.onclick = (e) => {
+        if (!e.target.classList.contains('card-menu-btn')) {
+          startTimer(timer.id);
+        }
+      };
+      card.innerHTML = '<div class="card-header"><div class="card-name">' + timer.name + '</div><button class="card-menu-btn" onclick="event.stopPropagation(); editTimer(\'' + timer.id + '\')">⋮</button></div><div class="card-info">준비: ' + timer.prepare.min + '분 ' + timer.prepare.sec + '초<br>운동: ' + timer.work.min + '분 ' + timer.work.sec + '초<br>휴식: ' + timer.rest.min + '분 ' + timer.rest.sec + '초<br>라운드: ' + timer.rounds + '</div>';
+      return card;
+    }
+
+    function addNewTimer() {
+      currentTimerId = 'timer_' + Date.now();
+      const newTimer = {
+        id: currentTimerId,
+        name: '타이머 ' + (timers.length + 1),
+        prepare: { min: 0, sec: 10, bg: '#FFA500', color: '#FFFFFF', startSound: 'default', endSound: 'beep' },
+        work: { min: 0, sec: 30, bg: '#FF0000', color: '#FFFFFF', startSound: 'default', endSound: 'beep' },
+        rest: { min: 0, sec: 10, bg: '#00FF00', color: '#000000', startSound: 'default', endSound: 'beep' },
+        rounds: 3,
+        volume: 50
+      };
+      timers.push(newTimer);
+      editTimer(currentTimerId);
+    }
+
+    function editTimer(id) {
+      currentTimerId = id;
+      const timer = timers.find(t => t.id === id);
+      if (!timer) return;
+      document.getElementById('timerNameInput').value = timer.name;
+
+      // 준비 시간
+      const prepareMin = String(timer.prepare.min).padStart(2, '0');
+      const prepareSec = String(timer.prepare.sec).padStart(2, '0');
+      document.getElementById('prepareMin1').value = prepareMin[0];
+      document.getElementById('prepareMin2').value = prepareMin[1];
+      document.getElementById('prepareSec1').value = prepareSec[0];
+      document.getElementById('prepareSec2').value = prepareSec[1];
+      document.getElementById('prepareBg').value = timer.prepare.bg;
+      document.getElementById('prepareColor').value = timer.prepare.color;
+      document.getElementById('prepareStartSound').value = timer.prepare.startSound || 'default';
+      document.getElementById('prepareEndSound').value = timer.prepare.endSound || 'beep';
+
+      // 운동 시간
+      const workMin = String(timer.work.min).padStart(2, '0');
+      const workSec = String(timer.work.sec).padStart(2, '0');
+      document.getElementById('workMin1').value = workMin[0];
+      document.getElementById('workMin2').value = workMin[1];
+      document.getElementById('workSec1').value = workSec[0];
+      document.getElementById('workSec2').value = workSec[1];
+      document.getElementById('workBg').value = timer.work.bg;
+      document.getElementById('workColor').value = timer.work.color;
+      document.getElementById('workStartSound').value = timer.work.startSound || 'default';
+      document.getElementById('workEndSound').value = timer.work.endSound || 'beep';
+
+      // 휴식 시간
+      const restMin = String(timer.rest.min).padStart(2, '0');
+      const restSec = String(timer.rest.sec).padStart(2, '0');
+      document.getElementById('restMin1').value = restMin[0];
+      document.getElementById('restMin2').value = restMin[1];
+      document.getElementById('restSec1').value = restSec[0];
+      document.getElementById('restSec2').value = restSec[1];
+      document.getElementById('restBg').value = timer.rest.bg;
+      document.getElementById('restColor').value = timer.rest.color;
+      document.getElementById('restStartSound').value = timer.rest.startSound || 'default';
+      document.getElementById('restEndSound').value = timer.rest.endSound || 'beep';
+
+      document.getElementById('rounds').value = timer.rounds;
+      document.getElementById('volume').value = timer.volume;
+      document.getElementById('timerSettingsModal').classList.add('show');
+    }
+
+    function closeTimerSettings() {
+      document.getElementById('timerSettingsModal').classList.remove('show');
+    }
+
+    function saveTimer() {
+      const timer = timers.find(t => t.id === currentTimerId);
+      if (!timer) return;
+      timer.name = document.getElementById('timerNameInput').value;
+
+      // 준비 시간
+      timer.prepare.min = parseInt(document.getElementById('prepareMin1').value) * 10 + parseInt(document.getElementById('prepareMin2').value);
+      timer.prepare.sec = parseInt(document.getElementById('prepareSec1').value) * 10 + parseInt(document.getElementById('prepareSec2').value);
+      timer.prepare.bg = document.getElementById('prepareBg').value;
+      timer.prepare.color = document.getElementById('prepareColor').value;
+      timer.prepare.startSound = document.getElementById('prepareStartSound').value;
+      timer.prepare.endSound = document.getElementById('prepareEndSound').value;
+
+      // 운동 시간
+      timer.work.min = parseInt(document.getElementById('workMin1').value) * 10 + parseInt(document.getElementById('workMin2').value);
+      timer.work.sec = parseInt(document.getElementById('workSec1').value) * 10 + parseInt(document.getElementById('workSec2').value);
+      timer.work.bg = document.getElementById('workBg').value;
+      timer.work.color = document.getElementById('workColor').value;
+      timer.work.startSound = document.getElementById('workStartSound').value;
+      timer.work.endSound = document.getElementById('workEndSound').value;
+
+      // 휴식 시간
+      timer.rest.min = parseInt(document.getElementById('restMin1').value) * 10 + parseInt(document.getElementById('restMin2').value);
+      timer.rest.sec = parseInt(document.getElementById('restSec1').value) * 10 + parseInt(document.getElementById('restSec2').value);
+      timer.rest.bg = document.getElementById('restBg').value;
+      timer.rest.color = document.getElementById('restColor').value;
+      timer.rest.startSound = document.getElementById('restStartSound').value;
+      timer.rest.endSound = document.getElementById('restEndSound').value;
+      timer.rounds = parseInt(document.getElementById('rounds').value);
+      timer.volume = parseInt(document.getElementById('volume').value);
+      saveTimers();
+      renderCards();
+      closeTimerSettings();
+      showToast('타이머가 저장되었습니다');
+    }
+
+    function deleteTimer() {
+      if (confirm('이 타이머를 삭제하시겠습니까?')) {
+        timers = timers.filter(t => t.id !== currentTimerId);
+        saveTimers();
+        renderCards();
+        closeTimerSettings();
+        showToast('타이머가 삭제되었습니다');
+      }
+    }
+
+    function copyTimer() {
+      const timer = timers.find(t => t.id === currentTimerId);
+      if (!timer) return;
+      const newTimer = JSON.parse(JSON.stringify(timer));
+      newTimer.id = 'timer_' + Date.now();
+      newTimer.name = timer.name + ' 복사';
+      timers.push(newTimer);
+      saveTimers();
+      renderCards();
+      closeTimerSettings();
+      showToast('타이머가 복사되었습니다');
+    }
+
+    function startTimer(id) {
+      const timer = timers.find(t => t.id === id);
+      if (!timer) return;
+      hideTimerCards();
+      runningTimer = {
+        config: timer,
+        phase: 'prepare',
+        currentRound: 1,
+        remainingTime: timer.prepare.min * 60 + timer.prepare.sec,
+        isPaused: false
+      };
+      showTimerScreen();
+      updateTimerDisplay();
+      playSound(timer.prepare.startSound, timer.volume);
+      vibrate([200, 100, 200]);
+      enableWakeLock();
+      timerInterval = setInterval(() => {
+        if (!runningTimer.isPaused) {
+          runningTimer.remainingTime--;
+          if (runningTimer.remainingTime <= 5 && runningTimer.remainingTime > 0) {
+            const phase = runningTimer.config[runningTimer.phase];
+            playSound(phase.endSound, timer.volume);
+            vibrate(100);
+          }
+          if (runningTimer.remainingTime <= 0) {
+            vibrate([200, 100, 200, 100, 200]);
+            nextPhase();
+          }
+          updateTimerDisplay();
+        }
+      }, 1000);
+    }
+
+    function nextPhase() {
+      const timer = runningTimer.config;
+      if (runningTimer.phase === 'prepare') {
+        runningTimer.phase = 'work';
+        runningTimer.remainingTime = timer.work.min * 60 + timer.work.sec;
+        playSound(timer.work.startSound, timer.volume);
+        vibrate([200, 100, 200]);
+      } else if (runningTimer.phase === 'work') {
+        runningTimer.phase = 'rest';
+        runningTimer.remainingTime = timer.rest.min * 60 + timer.rest.sec;
+        playSound(timer.rest.startSound, timer.volume);
+        vibrate([200, 100, 200]);
+      } else if (runningTimer.phase === 'rest') {
+        if (runningTimer.currentRound < timer.rounds) {
+          runningTimer.currentRound++;
+          runningTimer.phase = 'work';
+          runningTimer.remainingTime = timer.work.min * 60 + timer.work.sec;
+          playSound(timer.work.startSound, timer.volume);
+          vibrate([200, 100, 200]);
+        } else {
+          vibrate([300, 100, 300, 100, 300]);
+          stopTimer();
+          return;
+        }
+      }
+      updateTimerDisplay();
+    }
+
+    function showTimerScreen() {
+      document.getElementById('mainScreen').style.display = 'none';
+      document.getElementById('timerScreen').classList.add('show');
+      // 타이머 화면 표시 시 타이머 화면 설정 적용
+      applyTimerScreenSettings();
+    }
+
+    function applyTimerScreenSettings() {
+      const timerTimeEl = document.getElementById('timerTime');
+      if (timerTimeEl) {
+        timerTimeEl.style.fontSize = (timerScreenSettings.numberSize * 2) + 'px';
+      }
+      const timerPhaseEl = document.querySelector('.timer-phase');
+      const timerRoundEl = document.querySelector('.timer-round');
+      const timerNameEl = document.querySelector('.timer-name');
+      const textSize = timerScreenSettings.textSize * 0.5;
+      if (timerPhaseEl) {
+        timerPhaseEl.style.fontSize = textSize + 'px';
+      }
+      if (timerRoundEl) {
+        timerRoundEl.style.fontSize = textSize + 'px';
+      }
+      if (timerNameEl) {
+        timerNameEl.style.fontSize = textSize + 'px';
+      }
+    }
+
+    function updateTimerDisplay() {
+      if (!runningTimer) return;
+      const minutes = Math.floor(runningTimer.remainingTime / 60);
+      const seconds = runningTimer.remainingTime % 60;
+      document.getElementById('timerMinutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('timerSeconds').textContent = String(seconds).padStart(2, '0');
+      let phaseText = '';
+      if (runningTimer.phase === 'prepare') phaseText = '준비';
+      else if (runningTimer.phase === 'work') phaseText = '운동';
+      else if (runningTimer.phase === 'rest') phaseText = '휴식';
+      document.getElementById('timerPhase').textContent = phaseText;
+      document.getElementById('timerRound').textContent = runningTimer.currentRound + '/' + runningTimer.config.rounds;
+      document.getElementById('timerName').textContent = runningTimer.config.name;
+      const phase = runningTimer.config[runningTimer.phase];
+      document.getElementById('timerScreen').style.backgroundColor = phase.bg;
+      document.getElementById('timerScreen').style.color = phase.color;
+
+      // currentTimeSmall은 블랙 글라스 스타일 유지 (CSS에서 정의됨)
+    }
+
+    function handleTimerScreenClick(e) {
+      if (e.target.id === 'stopGuide' || longPressTimer) return;
+      if (!runningTimer.isPaused) {
+        runningTimer.isPaused = true;
+        document.getElementById('stopGuide').classList.add('show');
+        document.getElementById('timerScreen').classList.add('paused');
+        document.getElementById('pauseOverlay').classList.add('show');
+        vibrate(50);
+      }
+    }
+
+    function handlePauseOverlayClick(e) {
+      if (longPressTimer) return;
+      if (runningTimer && runningTimer.isPaused) {
+        runningTimer.isPaused = false;
+        document.getElementById('stopGuide').classList.remove('show');
+        document.getElementById('timerScreen').classList.remove('paused');
+        document.getElementById('pauseOverlay').classList.remove('show');
+        vibrate(50);
+        showToast('타이머 재개');
+      }
+    }
+
+    function handleLongPressStart(e) {
+      if (!runningTimer.isPaused) return;
+      e.preventDefault();
+      document.getElementById('progressCircle').classList.add('show', 'filling');
+      longPressTimer = setTimeout(() => {
+        vibrate(200);
+        stopTimer();
+      }, 1000);
+    }
+
+    function handleLongPressEnd(e) {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+        document.getElementById('progressCircle').classList.remove('show', 'filling');
+      }
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      disableWakeLock();
+      runningTimer = null;
+      document.getElementById('timerScreen').classList.remove('show', 'paused');
+      document.getElementById('mainScreen').style.display = 'flex';
+      document.getElementById('stopGuide').classList.remove('show');
+      document.getElementById('pauseOverlay').classList.remove('show');
+      document.getElementById('progressCircle').classList.remove('show', 'filling');
+    }
+
+    function handleCustomSoundUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const soundName = file.name.split('.')[0];
+          customSounds[soundName] = e.target.result;
+          localStorage.setItem('customSounds', JSON.stringify(customSounds));
+          addCustomSoundOption(soundName);
+        };
+        reader.readAsDataURL(file);
+      });
+      showToast('음원이 업로드되었습니다');
+    }
+
+    function addCustomSoundOption(soundName) {
+      const selects = document.querySelectorAll('select[id$="Sound"]');
+      selects.forEach(select => {
+        const exists = Array.from(select.options).some(opt => opt.value === soundName);
+        if (!exists) {
+          const option = document.createElement('option');
+          option.value = soundName;
+          option.textContent = soundName;
+          select.appendChild(option);
+        }
+      });
+    }
+
+    function playSound(soundType, volume) {
+      if (!globalSettings.soundEnabled || soundType === 'none') return;
+      const vol = volume / 100;
+      if (customSounds[soundType]) {
+        playCustomSound(customSounds[soundType], volume);
+        return;
+      }
+      switch(soundType) {
+        case 'beep':
+          playTone(1000, 0.3, vol);
+          break;
+        case 'bell':
+          playTone(800, 0.15, vol);
+          setTimeout(() => playTone(1000, 0.15, vol), 150);
+          setTimeout(() => playTone(800, 0.3, vol), 300);
+          break;
+        case 'default':
+          playTone(800, 0.2, vol);
+          setTimeout(() => playTone(600, 0.3, vol), 200);
+          break;
+      }
+    }
+
+    function playCustomSound(dataUrl, volume) {
+      const audio = new Audio(dataUrl);
+      audio.volume = volume / 100;
+      audio.play().catch(err => console.log('소리 재생 실패:', err));
+    }
+
+    function playTone(frequency, duration, volume) {
+      // 필요 시 AudioContext 초기화 (iOS 호환)
+      if (!audioContext) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (err) {
+          console.log('AudioContext 초기화 실패:', err);
+          return;
+        }
+      }
+
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
+      } catch (err) {
+        console.log('소리 재생 실패:', err);
+      }
+    }
+
+    function vibrate(pattern) {
+      if (globalSettings.vibrationEnabled && 'vibrate' in navigator) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    async function enableWakeLock() {
+      if (!globalSettings.keepScreenOn) return;
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('화면 꺼짐 방지 활성화');
+        } else {
+          console.log('이 브라우저는 WakeLock을 지원하지 않습니다');
+        }
+      } catch (err) {
+        console.log('화면 꺼짐 방지 실패:', err);
+      }
+    }
+
+    async function disableWakeLock() {
+      if (wakeLock) {
+        try {
+          await wakeLock.release();
+          wakeLock = null;
+          console.log('화면 꺼짐 방지 해제');
+        } catch (err) {
+          console.log('WakeLock 해제 실패:', err);
+        }
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function showTimerScreenSettings() {
+      document.getElementById('timerNumberSize').value = timerScreenSettings.numberSize;
+      document.getElementById('timerNumberSizeValue').textContent = timerScreenSettings.numberSize + '%';
+      document.getElementById('timerTextSize').value = timerScreenSettings.textSize;
+      document.getElementById('timerTextSizeValue').textContent = timerScreenSettings.textSize + '%';
+      document.getElementById('timerScreenSettingsModal').classList.add('show');
+      
+      document.getElementById('timerNumberSize').oninput = function() {
+        document.getElementById('timerNumberSizeValue').textContent = this.value + '%';
+        const timerTimeEl = document.getElementById('timerTime');
+        if (timerTimeEl) {
+          timerTimeEl.style.fontSize = (this.value * 2) + 'px';
+        }
+      };
+      
+      document.getElementById('timerTextSize').oninput = function() {
+        document.getElementById('timerTextSizeValue').textContent = this.value + '%';
+        const timerPhaseEl = document.querySelector('.timer-phase');
+        const timerRoundEl = document.querySelector('.timer-round');
+        const timerNameEl = document.querySelector('.timer-name');
+        const textSize = this.value * 0.5;
+        if (timerPhaseEl) {
+          timerPhaseEl.style.fontSize = textSize + 'px';
+        }
+        if (timerRoundEl) {
+          timerRoundEl.style.fontSize = textSize + 'px';
+        }
+        if (timerNameEl) {
+          timerNameEl.style.fontSize = textSize + 'px';
+        }
+      };
+    }
+
+    function closeTimerScreenSettings() {
+      document.getElementById('timerScreenSettingsModal').classList.remove('show');
+    }
+
+    function saveTimerScreenSettings() {
+      timerScreenSettings.numberSize = parseInt(document.getElementById('timerNumberSize').value);
+      timerScreenSettings.textSize = parseInt(document.getElementById('timerTextSize').value);
+      localStorage.setItem('timerScreenSettings', JSON.stringify(timerScreenSettings));
+      applyTimerScreenSettings();  // 즉시 적용
+      closeTimerScreenSettings();
+      showToast('타이머 화면 설정이 저장되었습니다');
+    }
+
+    function loadTimerScreenSettings() {
+      const saved = localStorage.getItem('timerScreenSettings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        timerScreenSettings = Object.assign(timerScreenSettings, parsed);
+      }
+    }
+
+    function saveTimers() {
+      localStorage.setItem('timers', JSON.stringify(timers));
+    }
+
+    function loadTimers() {
+      const saved = localStorage.getItem('timers');
+      if (saved) {
+        timers = JSON.parse(saved);
+      } else {
+        timers = [{
+          id: 'timer_default',
+          name: '기본 타이머',
+          prepare: { min: 0, sec: 10, bg: '#FFA500', color: '#FFFFFF', startSound: 'default', endSound: 'beep' },
+          work: { min: 0, sec: 30, bg: '#FF0000', color: '#FFFFFF', startSound: 'default', endSound: 'beep' },
+          rest: { min: 0, sec: 10, bg: '#00FF00', color: '#000000', startSound: 'default', endSound: 'beep' },
+          rounds: 3,
+          volume: 50
+        }];
+      }
+    }
+
+    function loadSettings() {
+      const saved = localStorage.getItem('globalSettings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        globalSettings = Object.assign(globalSettings, parsed);
+      }
+      const savedSounds = localStorage.getItem('customSounds');
+      if (savedSounds) {
+        customSounds = JSON.parse(savedSounds);
+        Object.keys(customSounds).forEach(soundName => {
+          addCustomSoundOption(soundName);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
