@@ -1329,7 +1329,7 @@
       <div class="setting-section">
         <label class="setting-label">날짜 크기 (%)</label>
         <div class="slider-container">
-          <input type="range" id="dateSize" min="50" max="200" value="100">
+          <input type="range" id="dateSize" min="25" max="75" value="50">
           <div id="dateSizeValue">100%</div>
         </div>
       </div>
@@ -1337,7 +1337,7 @@
       <div class="setting-section">
         <label class="setting-label">시계 크기 (%)</label>
         <div class="slider-container">
-          <input type="range" id="clockSize" min="50" max="200" value="100">
+          <input type="range" id="clockSize" min="25" max="75" value="50">
           <div id="clockSizeValue">100%</div>
         </div>
       </div>
@@ -1437,8 +1437,8 @@
     let customSounds = {};
 
     let globalSettings = {
-      dateSize: 100,
-      clockSize: 100,
+      dateSize: 50,
+      clockSize: 50,
       bgGradientStart: '#667eea',
       bgGradientEnd: '#764ba2',
       fontColor: '#ffffff',
@@ -1535,9 +1535,12 @@
 
     function showGlobalSettings() {
       document.getElementById('dateSize').value = globalSettings.dateSize;
-      document.getElementById('dateSizeValue').textContent = globalSettings.dateSize + '%';
+      // 실제값을 100% 기준으로 표시 (50 -> 100%, 25 -> 50%, 75 -> 150%)
+      const displayDateSize = Math.round((globalSettings.dateSize / 50) * 100);
+      document.getElementById('dateSizeValue').textContent = displayDateSize + '%';
       document.getElementById('clockSize').value = globalSettings.clockSize;
-      document.getElementById('clockSizeValue').textContent = globalSettings.clockSize + '%';
+      const displayClockSize = Math.round((globalSettings.clockSize / 50) * 100);
+      document.getElementById('clockSizeValue').textContent = displayClockSize + '%';
       document.getElementById('bgGradientStart').value = globalSettings.bgGradientStart;
       document.getElementById('bgGradientEnd').value = globalSettings.bgGradientEnd;
       document.getElementById('fontColor').value = globalSettings.fontColor;
@@ -1547,11 +1550,15 @@
       document.getElementById('globalSettingsModal').classList.add('show');
 
       document.getElementById('dateSize').oninput = function() {
-        document.getElementById('dateSizeValue').textContent = this.value + '%';
+        // 실제값을 100% 기준으로 표시
+        const displayValue = Math.round((this.value / 50) * 100);
+        document.getElementById('dateSizeValue').textContent = displayValue + '%';
         document.getElementById('dateDisplay').style.fontSize = this.value + 'px';
       };
       document.getElementById('clockSize').oninput = function() {
-        document.getElementById('clockSizeValue').textContent = this.value + '%';
+        // 실제값을 100% 기준으로 표시
+        const displayValue = Math.round((this.value / 50) * 100);
+        document.getElementById('clockSizeValue').textContent = displayValue + '%';
         document.getElementById('timeDisplay').style.fontSize = (this.value * 2) + 'px';
       };
 
