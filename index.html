@@ -1366,7 +1366,7 @@
       <div class="setting-section">
         <label class="setting-label">숫자 크기 (%)</label>
         <div class="slider-container">
-          <input type="range" id="timerNumberSize" min="50" max="200" value="100">
+          <input type="range" id="timerNumberSize" min="30" max="90" value="60">
           <div id="timerNumberSizeValue">100%</div>
         </div>
       </div>
@@ -1374,7 +1374,7 @@
       <div class="setting-section">
         <label class="setting-label">글자 크기 (%)</label>
         <div class="slider-container">
-          <input type="range" id="timerTextSize" min="50" max="200" value="100">
+          <input type="range" id="timerTextSize" min="30" max="90" value="60">
           <div id="timerTextSizeValue">100%</div>
         </div>
       </div>
@@ -1408,8 +1408,8 @@
     };
 
     let timerScreenSettings = {
-      numberSize: 100,
-      textSize: 100
+      numberSize: 60,
+      textSize: 60
     };
 
     window.addEventListener('load', () => {
@@ -1865,6 +1865,15 @@
         clearTimeout(longPressTimer);
         longPressTimer = null;
         document.getElementById('progressCircle').classList.remove('show', 'filling');
+        // 짧게 터치했을 때 타이머 재개
+        if (runningTimer && runningTimer.isPaused) {
+          runningTimer.isPaused = false;
+          document.getElementById('stopGuide').classList.remove('show');
+          document.getElementById('timerScreen').classList.remove('paused');
+          document.getElementById('pauseOverlay').classList.remove('show');
+          vibrate(50);
+          showToast('타이머 재개');
+        }
       }
     }
 
@@ -2008,21 +2017,28 @@
 
     function showTimerScreenSettings() {
       document.getElementById('timerNumberSize').value = timerScreenSettings.numberSize;
-      document.getElementById('timerNumberSizeValue').textContent = timerScreenSettings.numberSize + '%';
+      // 실제값을 100% 기준으로 표시 (60 -> 100%, 30 -> 50%, 90 -> 150%)
+      const displayNumberSize = Math.round((timerScreenSettings.numberSize / 60) * 100);
+      document.getElementById('timerNumberSizeValue').textContent = displayNumberSize + '%';
       document.getElementById('timerTextSize').value = timerScreenSettings.textSize;
-      document.getElementById('timerTextSizeValue').textContent = timerScreenSettings.textSize + '%';
+      const displayTextSize = Math.round((timerScreenSettings.textSize / 60) * 100);
+      document.getElementById('timerTextSizeValue').textContent = displayTextSize + '%';
       document.getElementById('timerScreenSettingsModal').classList.add('show');
-      
+
       document.getElementById('timerNumberSize').oninput = function() {
-        document.getElementById('timerNumberSizeValue').textContent = this.value + '%';
+        // 실제값을 100% 기준으로 표시
+        const displayValue = Math.round((this.value / 60) * 100);
+        document.getElementById('timerNumberSizeValue').textContent = displayValue + '%';
         const timerTimeEl = document.getElementById('timerTime');
         if (timerTimeEl) {
           timerTimeEl.style.fontSize = (this.value * 2) + 'px';
         }
       };
-      
+
       document.getElementById('timerTextSize').oninput = function() {
-        document.getElementById('timerTextSizeValue').textContent = this.value + '%';
+        // 실제값을 100% 기준으로 표시
+        const displayValue = Math.round((this.value / 60) * 100);
+        document.getElementById('timerTextSizeValue').textContent = displayValue + '%';
         const timerPhaseEl = document.querySelector('.timer-phase');
         const timerRoundEl = document.querySelector('.timer-round');
         const timerNameEl = document.querySelector('.timer-name');
