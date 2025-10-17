@@ -1523,6 +1523,9 @@
       textSize: 50
     };
 
+    let lastDateText = '';
+    let lastTimeText = '';
+
     window.addEventListener('load', () => {
       loadSettings();
       loadTimerScreenSettings();
@@ -1576,12 +1579,14 @@
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const date = String(now.getDate()).padStart(2, '0');
       const day = days[now.getDay()];
-      document.getElementById('dateDisplay').textContent = year + '.' + month + '.' + date + ' ' + day + '요일';
+      const dateText = year + '.' + month + '.' + date + ' ' + day + '요일';
+      document.getElementById('dateDisplay').textContent = dateText;
       let hours = now.getHours();
       const ampm = hours >= 12 ? 'PM' : 'AM';
       hours = hours % 12 || 12;
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
+      const timeText = ampm + ' ' + String(hours).padStart(2, '0') + ':' + minutes + ' ' + seconds;
       document.getElementById('ampm').textContent = ampm + ' ';
       document.getElementById('hours').textContent = String(hours).padStart(2, '0');
       document.getElementById('minutes').textContent = minutes;
@@ -1590,8 +1595,12 @@
         document.getElementById('currentTimeSmall').textContent = String(hours).padStart(2, '0') + ':' + minutes;
       }
 
-      // 텍스트가 넘칠 경우 자동으로 크기 조절
-      adjustTextSize();
+      // 텍스트가 변경되었을 때만 크기 조절
+      if (dateText !== lastDateText || timeText !== lastTimeText) {
+        lastDateText = dateText;
+        lastTimeText = timeText;
+        adjustTextSize();
+      }
     }
 
     function adjustTextSize() {
