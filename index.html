@@ -1449,7 +1449,7 @@
       <div class="setting-section">
         <label class="setting-label">숫자 크기 (%)</label>
         <div class="slider-container">
-          <input type="range" id="timerNumberSize" min="30" max="90" value="60">
+          <input type="range" id="timerNumberSize" min="25" max="75" value="50">
           <div id="timerNumberSizeValue">100%</div>
         </div>
       </div>
@@ -1457,7 +1457,7 @@
       <div class="setting-section">
         <label class="setting-label">글자 크기 (%)</label>
         <div class="slider-container">
-          <input type="range" id="timerTextSize" min="30" max="90" value="60">
+          <input type="range" id="timerTextSize" min="25" max="75" value="50">
           <div id="timerTextSizeValue">100%</div>
         </div>
       </div>
@@ -1491,8 +1491,8 @@
     };
 
     let timerScreenSettings = {
-      numberSize: 60,
-      textSize: 60
+      numberSize: 50,
+      textSize: 50
     };
 
     window.addEventListener('load', () => {
@@ -2136,17 +2136,17 @@
 
     function showTimerScreenSettings() {
       document.getElementById('timerNumberSize').value = timerScreenSettings.numberSize;
-      // 실제값을 100% 기준으로 표시 (60 -> 100%, 30 -> 50%, 90 -> 150%)
-      const displayNumberSize = Math.round((timerScreenSettings.numberSize / 60) * 100);
+      // 실제값을 100% 기준으로 표시 (50 -> 100%, 25 -> 50%, 75 -> 150%)
+      const displayNumberSize = Math.round((timerScreenSettings.numberSize / 50) * 100);
       document.getElementById('timerNumberSizeValue').textContent = displayNumberSize + '%';
       document.getElementById('timerTextSize').value = timerScreenSettings.textSize;
-      const displayTextSize = Math.round((timerScreenSettings.textSize / 60) * 100);
+      const displayTextSize = Math.round((timerScreenSettings.textSize / 50) * 100);
       document.getElementById('timerTextSizeValue').textContent = displayTextSize + '%';
       document.getElementById('timerScreenSettingsModal').classList.add('show');
 
       document.getElementById('timerNumberSize').oninput = function() {
         // 실제값을 100% 기준으로 표시
-        const displayValue = Math.round((this.value / 60) * 100);
+        const displayValue = Math.round((this.value / 50) * 100);
         document.getElementById('timerNumberSizeValue').textContent = displayValue + '%';
         const timerTimeEl = document.getElementById('timerTime');
         if (timerTimeEl) {
@@ -2156,7 +2156,7 @@
 
       document.getElementById('timerTextSize').oninput = function() {
         // 실제값을 100% 기준으로 표시
-        const displayValue = Math.round((this.value / 60) * 100);
+        const displayValue = Math.round((this.value / 50) * 100);
         document.getElementById('timerTextSizeValue').textContent = displayValue + '%';
         const timerPhaseEl = document.querySelector('.timer-phase');
         const timerRoundEl = document.querySelector('.timer-round');
