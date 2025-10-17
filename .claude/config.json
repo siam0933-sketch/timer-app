@@ -1,0 +1,5 @@
+{
+  "autoApprove": {
+    "bash": ["git push", "git commit", "npm install", "npm run"]
+  }
+}
