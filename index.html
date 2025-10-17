@@ -122,6 +122,10 @@
       font-weight: 300;
       letter-spacing: 2px;
       text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90vw;
     }
 
     #timeDisplay {
@@ -130,6 +134,9 @@
       line-height: 1.1;
       letter-spacing: -2px;
       text-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 90vw;
     }
 
     .time-ampm, .time-seconds {
@@ -1517,6 +1524,35 @@
       document.getElementById('seconds').textContent = ' ' + seconds;
       if (document.getElementById('timerScreen').classList.contains('show')) {
         document.getElementById('currentTimeSmall').textContent = ampm + ' ' + String(hours).padStart(2, '0') + ':' + minutes;
+      }
+
+      // 텍스트가 넘칠 경우 자동으로 크기 조절
+      adjustTextSize();
+    }
+
+    function adjustTextSize() {
+      const dateEl = document.getElementById('dateDisplay');
+      const timeEl = document.getElementById('timeDisplay');
+      const containerWidth = window.innerWidth * 0.9; // 90vw
+
+      // 날짜 크기 조절
+      if (dateEl) {
+        let fontSize = globalSettings.dateSize;
+        dateEl.style.fontSize = fontSize + 'px';
+        while (dateEl.scrollWidth > containerWidth && fontSize > 12) {
+          fontSize -= 1;
+          dateEl.style.fontSize = fontSize + 'px';
+        }
+      }
+
+      // 시계 크기 조절
+      if (timeEl) {
+        let fontSize = globalSettings.clockSize * 2;
+        timeEl.style.fontSize = fontSize + 'px';
+        while (timeEl.scrollWidth > containerWidth && fontSize > 30) {
+          fontSize -= 2;
+          timeEl.style.fontSize = fontSize + 'px';
+        }
       }
     }
 
