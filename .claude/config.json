@@ -1,8 +1,10 @@
 {
   "autoApprove": {
-    "bash": ["git push", "git commit", "npm install", "npm run"],
+    "bash": ["git push", "git commit", "git add", "npm install", "npm run", "git status", "git diff"],
     "edit": true,
     "write": true,
-    "read": true
+    "read": true,
+    "glob": true,
+    "grep": true
   }
 }
