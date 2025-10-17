@@ -15,7 +15,7 @@
   <meta name="theme-color" content="#282c34">
 
   <!-- PWA Display 모드 -->
-  <meta name="display" content="standalone">
+  <meta name="display" content="fullscreen">
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
@@ -1904,6 +1904,41 @@
       document.getElementById('timerScreen').classList.add('show');
       // 타이머 화면 표시 시 타이머 화면 설정 적용
       applyTimerScreenSettings();
+      // 전체화면 모드 요청
+      requestFullscreen();
+    }
+
+    function requestFullscreen() {
+      const elem = document.documentElement;
+      try {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(err => console.log('전체화면 요청 실패:', err));
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          elem.mozRequestFullScreen();
+        } else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+        }
+      } catch (err) {
+        console.log('전체화면 요청 중 오류:', err);
+      }
+    }
+
+    function exitFullscreen() {
+      try {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(err => console.log('전체화면 종료 실패:', err));
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      } catch (err) {
+        console.log('전체화면 종료 중 오류:', err);
+      }
     }
 
     function applyTimerScreenSettings() {
@@ -2002,6 +2037,7 @@
         timerInterval = null;
       }
       disableWakeLock();
+      exitFullscreen();
       runningTimer = null;
       document.getElementById('timerScreen').classList.remove('show', 'paused');
       document.getElementById('mainScreen').style.display = 'flex';
