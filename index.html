@@ -810,16 +810,50 @@
     .current-time-small {
       position: absolute;
       top: min(5vw, 30px);
+      left: 50%;
+      transform: translateX(-50%);
       text-align: center;
-      font-size: clamp(24px, 5vw, 50px);
-      padding: clamp(8px, 2vw, 12px) clamp(15px, 4vw, 25px);
-      border-radius: 15px;
+      font-size: clamp(16px, 3vh, 28px);
+      padding: clamp(6px, 1.5vh, 10px) clamp(12px, 3vw, 20px);
+      border-radius: 12px;
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(15px);
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
       border: 1px solid rgba(255,255,255,0.15);
       font-weight: 600;
       color: white !important;
+      z-index: 5;
+    }
+
+    /* 가로 화면 대응 */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .current-time-small {
+        font-size: clamp(14px, 2.5vh, 20px);
+        padding: clamp(4px, 1vh, 8px) clamp(10px, 2.5vw, 16px);
+        top: clamp(10px, 2vh, 15px);
+      }
+
+      .timer-display {
+        gap: clamp(8px, 2vh, 15px);
+        padding: 10px;
+      }
+
+      .timer-main-row {
+        gap: clamp(10px, 3vw, 25px);
+      }
+
+      .timer-phase, .timer-round {
+        font-size: clamp(20px, 4vh, 40px) !important;
+      }
+
+      #timerTime {
+        font-size: clamp(50px, 12vh, 120px) !important;
+      }
+
+      .timer-name {
+        font-size: clamp(18px, 3.5vh, 35px) !important;
+        margin-top: 5px;
+      }
     }
 
     .timer-display {
