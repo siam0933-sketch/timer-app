@@ -1608,16 +1608,6 @@
       const timeEl = document.getElementById('timeDisplay');
       const containerWidth = window.innerWidth * 0.9; // 90vw
 
-      // 날짜 크기 조절
-      if (dateEl) {
-        let fontSize = globalSettings.dateSize;
-        dateEl.style.fontSize = fontSize + 'px';
-        while (dateEl.scrollWidth > containerWidth && fontSize > 12) {
-          fontSize -= 1;
-          dateEl.style.fontSize = fontSize + 'px';
-        }
-      }
-
       // 시계 크기 조절
       if (timeEl) {
         let fontSize = globalSettings.clockSize * 2;
@@ -1626,14 +1616,30 @@
           fontSize -= 2;
           timeEl.style.fontSize = fontSize + 'px';
         }
+
+        // 날짜는 최종 시계 크기의 70%로 고정
+        if (dateEl) {
+          const dateFontSize = fontSize * 0.7;
+          dateEl.style.fontSize = dateFontSize + 'px';
+        }
       }
     }
 
     function applyGlobalSettings() {
-      const dateEl = document.getElementById('dateDisplay');
-      if (dateEl) dateEl.style.fontSize = globalSettings.dateSize + 'px';
       const timeEl = document.getElementById('timeDisplay');
-      if (timeEl) timeEl.style.fontSize = (globalSettings.clockSize * 2) + 'px';
+      const dateEl = document.getElementById('dateDisplay');
+
+      // 시계 크기 설정
+      if (timeEl) {
+        timeEl.style.fontSize = (globalSettings.clockSize * 2) + 'px';
+      }
+
+      // 날짜는 시계 크기의 70%로 고정
+      if (dateEl && timeEl) {
+        const dateFontSize = (globalSettings.clockSize * 2) * 0.7;
+        dateEl.style.fontSize = dateFontSize + 'px';
+      }
+
       // timerTime은 여기서 설정하지 않음 (타이머 화면 설정과 독립)
       const gradient = 'linear-gradient(135deg, ' + globalSettings.bgGradientStart + ' 0%, ' + globalSettings.bgGradientEnd + ' 100%)';
       document.getElementById('mainScreen').style.background = gradient;
@@ -1662,13 +1668,16 @@
         // 실제값을 100% 기준으로 표시
         const displayValue = Math.round((this.value / 50) * 100);
         document.getElementById('dateSizeValue').textContent = displayValue + '%';
-        document.getElementById('dateDisplay').style.fontSize = this.value + 'px';
+        // 날짜는 더이상 독립적으로 조절되지 않음 (시계 크기의 70%로 고정)
       };
       document.getElementById('clockSize').oninput = function() {
         // 실제값을 100% 기준으로 표시
         const displayValue = Math.round((this.value / 50) * 100);
         document.getElementById('clockSizeValue').textContent = displayValue + '%';
-        document.getElementById('timeDisplay').style.fontSize = (this.value * 2) + 'px';
+        const clockFontSize = this.value * 2;
+        document.getElementById('timeDisplay').style.fontSize = clockFontSize + 'px';
+        // 날짜는 시계 크기의 70%로 설정
+        document.getElementById('dateDisplay').style.fontSize = (clockFontSize * 0.7) + 'px';
       };
 
       // 그라데이션 실시간 미리보기
