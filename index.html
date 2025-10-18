@@ -1523,8 +1523,6 @@
       textSize: 50
     };
 
-    let lastDateText = '';
-    let lastTimeText = '';
 
     window.addEventListener('load', () => {
       loadSettings();
@@ -1586,7 +1584,6 @@
       hours = hours % 12 || 12;
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
-      const timeText = ampm + ' ' + String(hours).padStart(2, '0') + ':' + minutes + ' ' + seconds;
       document.getElementById('ampm').textContent = ampm + ' ';
       document.getElementById('hours').textContent = String(hours).padStart(2, '0');
       document.getElementById('minutes').textContent = minutes;
@@ -1594,35 +1591,11 @@
       if (document.getElementById('timerScreen').classList.contains('show')) {
         document.getElementById('currentTimeSmall').textContent = String(hours).padStart(2, '0') + ':' + minutes;
       }
-
-      // 텍스트가 변경되었을 때만 크기 조절
-      if (dateText !== lastDateText || timeText !== lastTimeText) {
-        lastDateText = dateText;
-        lastTimeText = timeText;
-        adjustTextSize();
-      }
     }
 
     function adjustTextSize() {
-      const dateEl = document.getElementById('dateDisplay');
-      const timeEl = document.getElementById('timeDisplay');
-      const containerWidth = window.innerWidth * 0.9; // 90vw
-
-      // 시계 크기 조절
-      if (timeEl) {
-        let fontSize = globalSettings.clockSize * 2;
-        timeEl.style.fontSize = fontSize + 'px';
-        while (timeEl.scrollWidth > containerWidth && fontSize > 30) {
-          fontSize -= 2;
-          timeEl.style.fontSize = fontSize + 'px';
-        }
-
-        // 날짜는 최종 시계 크기의 70%로 고정
-        if (dateEl) {
-          const dateFontSize = fontSize * 0.7;
-          dateEl.style.fontSize = dateFontSize + 'px';
-        }
-      }
+      // 이 함수는 이제 applyGlobalSettings에서만 호출되어야 함
+      // updateClock에서는 호출하지 않음
     }
 
     function applyGlobalSettings() {
@@ -1634,9 +1607,9 @@
         timeEl.style.fontSize = (globalSettings.clockSize * 2) + 'px';
       }
 
-      // 날짜는 시계 크기의 70%로 고정
+      // 날짜는 시계 크기의 30%로 고정
       if (dateEl && timeEl) {
-        const dateFontSize = (globalSettings.clockSize * 2) * 0.7;
+        const dateFontSize = (globalSettings.clockSize * 2) * 0.3;
         dateEl.style.fontSize = dateFontSize + 'px';
       }
 
@@ -1668,7 +1641,7 @@
         // 실제값을 100% 기준으로 표시
         const displayValue = Math.round((this.value / 50) * 100);
         document.getElementById('dateSizeValue').textContent = displayValue + '%';
-        // 날짜는 더이상 독립적으로 조절되지 않음 (시계 크기의 70%로 고정)
+        // 날짜는 더이상 독립적으로 조절되지 않음 (시계 크기의 30%로 고정)
       };
       document.getElementById('clockSize').oninput = function() {
         // 실제값을 100% 기준으로 표시
@@ -1676,8 +1649,8 @@
         document.getElementById('clockSizeValue').textContent = displayValue + '%';
         const clockFontSize = this.value * 2;
         document.getElementById('timeDisplay').style.fontSize = clockFontSize + 'px';
-        // 날짜는 시계 크기의 70%로 설정
-        document.getElementById('dateDisplay').style.fontSize = (clockFontSize * 0.7) + 'px';
+        // 날짜는 시계 크기의 30%로 설정
+        document.getElementById('dateDisplay').style.fontSize = (clockFontSize * 0.3) + 'px';
       };
 
       // 그라데이션 실시간 미리보기
