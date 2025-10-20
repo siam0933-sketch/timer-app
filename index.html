@@ -168,14 +168,12 @@
       display: none;
       z-index: 100;
       pointer-events: none;
-      background: rgba(0,0,0,0);
-      transition: background 0.3s ease;
+      background: transparent;
     }
 
     #timerCardsOverlay.show {
       display: block;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(5px);
+      pointer-events: auto;
     }
 
     .cards-container {
