@@ -896,48 +896,6 @@
       filter: blur(8px) brightness(0.6);
     }
 
-    #timerSettingsBtn {
-      position: absolute;
-      top: min(5vw, 30px);
-      right: min(5vw, 30px);
-      width: clamp(50px, 12vw, 70px);
-      height: clamp(50px, 12vw, 70px);
-      background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 12px;
-      cursor: pointer;
-      z-index: 10;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: clamp(4px, 1vw, 6px);
-      padding: clamp(12px, 3vw, 16px);
-    }
-
-    #timerSettingsBtn .hamburger-line {
-      width: 100%;
-      height: clamp(3px, 0.7vw, 4px);
-      background: white;
-      border-radius: 2px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    #timerSettingsBtn:hover {
-      background: rgba(255,255,255,0.3);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-
-    #timerSettingsBtn:hover .hamburger-line {
-      background: rgba(255,255,255,0.95);
-    }
-
-    #timerSettingsBtn:active {
-      transform: scale(0.92);
-    }
 
     .pause-overlay {
       position: fixed;
@@ -967,25 +925,29 @@
     }
 
     .current-time-small {
-      width: 100%;
       text-align: center;
-      font-size: clamp(18px, 3vh, 28px);
-      padding: clamp(8px, 1.5vh, 12px) clamp(16px, 4vw, 24px);
-      background: rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      font-weight: 500;
-      color: rgba(255,255,255,0.85) !important;
+      font-size: clamp(36px, 6vh, 56px);
+      padding: clamp(16px, 3vh, 24px) clamp(32px, 8vw, 48px);
+      background: transparent;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      font-weight: 600;
+      color: white !important;
       z-index: 5;
       flex-shrink: 0;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
+      margin: 20px;
+      width: auto;
+      display: inline-block;
+      align-self: center;
     }
 
     /* 가로 화면 대응 */
     @media (orientation: landscape) and (max-height: 500px) {
       .current-time-small {
-        font-size: clamp(14px, 2.5vh, 20px);
-        padding: clamp(6px, 1vh, 10px) clamp(12px, 3vw, 18px);
+        font-size: clamp(28px, 5vh, 40px);
+        padding: clamp(12px, 2vh, 20px) clamp(24px, 6vw, 36px);
+        margin: 15px;
       }
 
       #settingsBtn {
@@ -1001,18 +963,6 @@
         height: clamp(2px, 0.4vw, 2.5px);
       }
 
-      #timerSettingsBtn {
-        width: clamp(25px, 6vw, 35px);
-        height: clamp(25px, 6vw, 35px);
-        top: clamp(10px, 2vh, 15px);
-        right: clamp(10px, 2vh, 15px);
-        gap: clamp(2px, 0.5vw, 3px);
-        padding: clamp(6px, 1.5vw, 8px);
-      }
-
-      #timerSettingsBtn .hamburger-line {
-        height: clamp(2px, 0.4vw, 2.5px);
-      }
 
       .timer-display {
         gap: clamp(8px, 2vh, 15px);
@@ -1226,11 +1176,6 @@
   </div>
 
   <div id="timerScreen">
-    <button id="timerSettingsBtn">
-      <div class="hamburger-line"></div>
-      <div class="hamburger-line"></div>
-      <div class="hamburger-line"></div>
-    </button>
     <div class="current-time-small" id="currentTimeSmall"></div>
     <div class="timer-display">
       <div class="timer-main-row">
@@ -1705,10 +1650,6 @@
       document.getElementById('settingsBtn').addEventListener('click', function(e) {
         e.stopPropagation();
         showGlobalSettings();
-      });
-      document.getElementById('timerSettingsBtn').addEventListener('click', function(e) {
-        e.stopPropagation();
-        showTimerScreenSettings();
       });
       document.getElementById('pauseOverlay').addEventListener('touchstart', handleLongPressStart);
       document.getElementById('pauseOverlay').addEventListener('touchend', handleLongPressEnd);
