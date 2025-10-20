@@ -105,6 +105,12 @@
       text-align: center;
       padding: 20px;
       animation: fadeInUp 0.8s ease-out;
+      width: 90vw;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     @keyframes fadeInUp {
@@ -119,27 +125,26 @@
     }
 
     #dateDisplay {
-      font-size: clamp(24px, 6vw, 100px);
+      font-size: 1em;
       margin-bottom: 15px;
       opacity: 0.95;
       font-weight: 300;
-      letter-spacing: 2px;
+      letter-spacing: 0.05em;
       text-shadow: 0 2px 10px rgba(0,0,0,0.1);
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 90vw;
     }
 
     #timeDisplay {
-      font-size: clamp(60px, 15vw, 200px);
+      font-size: 1em;
       font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -2px;
+      line-height: 1;
+      letter-spacing: -0.02em;
       text-shadow: 0 4px 20px rgba(0,0,0,0.15);
       white-space: nowrap;
-      overflow: hidden;
-      max-width: 90vw;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.15em;
     }
 
     .time-ampm, .time-seconds {
@@ -608,71 +613,157 @@
       -webkit-appearance: none;
       appearance: none;
       background: transparent;
+      padding: 0;
+      margin: 15px 0;
     }
 
     input[type="range"]::-webkit-slider-track {
-      height: 12px;
-      background: #cbd5e1;
-      border-radius: 6px;
-      border: 2px solid #475569;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+      width: 100%;
+      height: 16px;
+      background: linear-gradient(to right, #e2e8f0, #cbd5e1);
+      border-radius: 8px;
+      border: 3px solid #64748b;
+      box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.15),
+        0 1px 2px rgba(0,0,0,0.1);
     }
 
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 36px;
-      height: 36px;
+      width: 44px;
+      height: 44px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border-radius: 50%;
       cursor: pointer;
-      margin-top: -14px;
-      box-shadow: 0 4px 12px rgba(102,126,234,0.4);
-      border: 3px solid white;
+      margin-top: -17px;
+      box-shadow:
+        0 0 0 4px white,
+        0 4px 12px rgba(102,126,234,0.5),
+        0 2px 6px rgba(0,0,0,0.2);
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow:
+        0 0 0 4px white,
+        0 6px 16px rgba(102,126,234,0.6),
+        0 3px 8px rgba(0,0,0,0.3);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.05);
     }
 
     input[type="range"]::-moz-range-track {
-      height: 12px;
-      background: #cbd5e1;
-      border-radius: 6px;
-      border: 2px solid #475569;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+      width: 100%;
+      height: 16px;
+      background: linear-gradient(to right, #e2e8f0, #cbd5e1);
+      border-radius: 8px;
+      border: 3px solid #64748b;
+      box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.15),
+        0 1px 2px rgba(0,0,0,0.1);
     }
 
     input[type="range"]::-moz-range-thumb {
-      width: 36px;
-      height: 36px;
+      width: 44px;
+      height: 44px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border-radius: 50%;
       cursor: pointer;
-      border: 3px solid white;
-      box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+      border: 4px solid white;
+      box-shadow:
+        0 4px 12px rgba(102,126,234,0.5),
+        0 2px 6px rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+    }
+
+    input[type="range"]::-moz-range-thumb:hover {
+      transform: scale(1.1);
+      box-shadow:
+        0 6px 16px rgba(102,126,234,0.6),
+        0 3px 8px rgba(0,0,0,0.3);
+    }
+
+    input[type="range"]::-moz-range-thumb:active {
+      transform: scale(1.05);
+    }
+
+    /* Edge/IE 지원 */
+    input[type="range"]::-ms-track {
+      width: 100%;
+      height: 16px;
+      background: transparent;
+      border-color: transparent;
+      color: transparent;
+    }
+
+    input[type="range"]::-ms-fill-lower {
+      background: #cbd5e1;
+      border-radius: 8px;
+      border: 3px solid #64748b;
+    }
+
+    input[type="range"]::-ms-fill-upper {
+      background: #e2e8f0;
+      border-radius: 8px;
+      border: 3px solid #64748b;
+    }
+
+    input[type="range"]::-ms-thumb {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(102,126,234,0.5);
     }
 
     @media (orientation: portrait) {
       input[type="range"] {
         height: 80px;
+        margin: 20px 0;
       }
 
       input[type="range"]::-webkit-slider-track {
-        height: 16px;
-        border-radius: 8px;
+        height: 20px;
+        border-radius: 10px;
+        border: 4px solid #64748b;
       }
 
       input[type="range"]::-webkit-slider-thumb {
-        width: 48px;
-        height: 48px;
-        margin-top: -18px;
+        width: 56px;
+        height: 56px;
+        margin-top: -22px;
+        box-shadow:
+          0 0 0 5px white,
+          0 6px 16px rgba(102,126,234,0.6),
+          0 3px 8px rgba(0,0,0,0.2);
       }
 
       input[type="range"]::-moz-range-track {
-        height: 16px;
-        border-radius: 8px;
+        height: 20px;
+        border-radius: 10px;
+        border: 4px solid #64748b;
       }
 
       input[type="range"]::-moz-range-thumb {
-        width: 48px;
-        height: 48px;
+        width: 56px;
+        height: 56px;
+        border: 5px solid white;
+        box-shadow:
+          0 6px 16px rgba(102,126,234,0.6),
+          0 3px 8px rgba(0,0,0,0.2);
+      }
+
+      input[type="range"]::-ms-thumb {
+        width: 56px;
+        height: 56px;
+        border: 5px solid white;
       }
     }
 
@@ -1464,14 +1555,6 @@
         <div class="modal-title">현재시간 설정</div>
         <button class="close-btn" onclick="closeGlobalSettings()">×</button>
       </div>
-      
-      <div class="setting-section">
-        <label class="setting-label">시계 크기 (%)</label>
-        <div class="slider-container">
-          <input type="range" id="clockSize" min="25" max="75" value="50">
-          <div id="clockSizeValue">100%</div>
-        </div>
-      </div>
 
       <div class="setting-section">
         <label class="setting-label">배경 그라데이션</label>
@@ -1568,8 +1651,6 @@
     let customSounds = {};
 
     let globalSettings = {
-      dateSize: 50,
-      clockSize: 50,
       bgGradientStart: '#667eea',
       bgGradientEnd: '#764ba2',
       fontColor: '#ffffff',
@@ -1592,8 +1673,17 @@
       updateClock();
       setInterval(updateClock, 1000);
       setupEventListeners();
-      setTimeout(() => applyGlobalSettings(), 100);
+      setTimeout(() => {
+        applyGlobalSettings();
+        adjustClockSize();
+      }, 100);
       // AudioContext는 사용자 인터랙션 후에 초기화
+
+      // 화면 크기 변경 시 시계 크기 재조정
+      window.addEventListener('resize', adjustClockSize);
+      window.addEventListener('orientationchange', () => {
+        setTimeout(adjustClockSize, 100);
+      });
 
       // Service Worker 등록 (PWA)
       if ('serviceWorker' in navigator) {
@@ -1653,27 +1743,66 @@
       }
     }
 
-    function adjustTextSize() {
-      // 이 함수는 이제 applyGlobalSettings에서만 호출되어야 함
-      // updateClock에서는 호출하지 않음
+    function adjustClockSize() {
+      const clockContainer = document.querySelector('.clock-container');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const dateDisplay = document.getElementById('dateDisplay');
+
+      if (!clockContainer || !timeDisplay || !dateDisplay) return;
+
+      // 시계 내용의 전체 텍스트 길이 계산 (AM/PM HH:MM SS 형식)
+      const timeText = timeDisplay.textContent || 'AM 12:00 00';
+      const dateText = dateDisplay.textContent || '2024.01.01 월요일';
+
+      // 컨테이너의 가용 너비 (90vw, 패딩 고려)
+      const containerWidth = window.innerWidth * 0.9 - 40; // padding 20px * 2
+      const containerHeight = window.innerHeight * 0.6; // 화면 높이의 60% 사용
+
+      // 이진 탐색으로 최적 폰트 크기 찾기
+      let minSize = 10;
+      let maxSize = 500;
+      let optimalSize = minSize;
+
+      // 임시 측정용 요소 생성
+      const tempTime = document.createElement('div');
+      tempTime.style.position = 'absolute';
+      tempTime.style.visibility = 'hidden';
+      tempTime.style.whiteSpace = 'nowrap';
+      tempTime.style.fontWeight = '700';
+      tempTime.style.letterSpacing = '-0.02em';
+      tempTime.style.display = 'flex';
+      tempTime.style.gap = '0.15em';
+      tempTime.innerHTML = timeDisplay.innerHTML;
+      document.body.appendChild(tempTime);
+
+      while (minSize <= maxSize) {
+        const midSize = Math.floor((minSize + maxSize) / 2);
+        tempTime.style.fontSize = midSize + 'px';
+
+        const timeWidth = tempTime.offsetWidth;
+        const timeHeight = tempTime.offsetHeight;
+
+        // 날짜는 시간의 30% 크기
+        const dateHeight = midSize * 0.3;
+        const totalHeight = timeHeight + dateHeight + 15; // 15px margin
+
+        if (timeWidth <= containerWidth && totalHeight <= containerHeight) {
+          optimalSize = midSize;
+          minSize = midSize + 1;
+        } else {
+          maxSize = midSize - 1;
+        }
+      }
+
+      document.body.removeChild(tempTime);
+
+      // 최종 크기 적용
+      timeDisplay.style.fontSize = optimalSize + 'px';
+      dateDisplay.style.fontSize = (optimalSize * 0.3) + 'px';
     }
 
     function applyGlobalSettings() {
-      const timeEl = document.getElementById('timeDisplay');
-      const dateEl = document.getElementById('dateDisplay');
-
-      // 시계 크기 설정
-      if (timeEl) {
-        timeEl.style.fontSize = (globalSettings.clockSize * 2) + 'px';
-      }
-
-      // 날짜는 시계 크기의 30%로 고정
-      if (dateEl && timeEl) {
-        const dateFontSize = (globalSettings.clockSize * 2) * 0.3;
-        dateEl.style.fontSize = dateFontSize + 'px';
-      }
-
-      // timerTime은 여기서 설정하지 않음 (타이머 화면 설정과 독립)
+      // 배경 그라데이션 및 글자색 적용
       const gradient = 'linear-gradient(135deg, ' + globalSettings.bgGradientStart + ' 0%, ' + globalSettings.bgGradientEnd + ' 100%)';
       document.getElementById('mainScreen').style.background = gradient;
       document.getElementById('mainScreen').style.color = globalSettings.fontColor;
@@ -1682,9 +1811,6 @@
     }
 
     function showGlobalSettings() {
-      document.getElementById('clockSize').value = globalSettings.clockSize;
-      const displayClockSize = Math.round((globalSettings.clockSize / 50) * 100);
-      document.getElementById('clockSizeValue').textContent = displayClockSize + '%';
       document.getElementById('bgGradientStart').value = globalSettings.bgGradientStart;
       document.getElementById('bgGradientEnd').value = globalSettings.bgGradientEnd;
       document.getElementById('fontColor').value = globalSettings.fontColor;
@@ -1692,16 +1818,6 @@
       document.getElementById('soundEnabled').checked = globalSettings.soundEnabled;
       document.getElementById('vibrationEnabled').checked = globalSettings.vibrationEnabled;
       document.getElementById('globalSettingsModal').classList.add('show');
-
-      document.getElementById('clockSize').oninput = function() {
-        // 실제값을 100% 기준으로 표시
-        const displayValue = Math.round((this.value / 50) * 100);
-        document.getElementById('clockSizeValue').textContent = displayValue + '%';
-        const clockFontSize = this.value * 2;
-        document.getElementById('timeDisplay').style.fontSize = clockFontSize + 'px';
-        // 날짜는 시계 크기의 30%로 설정
-        document.getElementById('dateDisplay').style.fontSize = (clockFontSize * 0.3) + 'px';
-      };
 
       // 그라데이션 실시간 미리보기
       const updateGradient = function() {
@@ -1725,7 +1841,6 @@
     }
 
     function saveGlobalSettings() {
-      globalSettings.clockSize = parseInt(document.getElementById('clockSize').value);
       globalSettings.bgGradientStart = document.getElementById('bgGradientStart').value;
       globalSettings.bgGradientEnd = document.getElementById('bgGradientEnd').value;
       globalSettings.fontColor = document.getElementById('fontColor').value;
@@ -1734,6 +1849,7 @@
       globalSettings.vibrationEnabled = document.getElementById('vibrationEnabled').checked;
       localStorage.setItem('globalSettings', JSON.stringify(globalSettings));
       applyGlobalSettings();
+      adjustClockSize();
       closeGlobalSettings();
       showToast('설정이 저장되었습니다');
     }
