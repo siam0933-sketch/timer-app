@@ -2350,7 +2350,7 @@
         timerInterval = null;
       }
       disableWakeLock();
-      exitFullscreen();
+      // 전체화면 유지 (exitFullscreen 제거)
       runningTimer = null;
       document.getElementById('timerScreen').classList.remove('show', 'paused');
       document.getElementById('mainScreen').style.display = 'flex';
