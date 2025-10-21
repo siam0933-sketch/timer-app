@@ -415,7 +415,11 @@
     }
 
     .setting-section {
-      margin-bottom: 25px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
     .setting-section.inline {
@@ -442,9 +446,9 @@
 
     .setting-label {
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       display: block;
-      font-size: clamp(15px, 4vw, 18px);
+      font-size: clamp(16px, 4vw, 20px);
       color: #2d3748;
       letter-spacing: -0.3px;
     }
@@ -538,8 +542,8 @@
 
     .color-picker-group {
       display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 15px;
     }
 
     .color-picker-item {
@@ -555,9 +559,13 @@
       font-size: 14px;
       font-weight: bold;
       color: white;
-      text-shadow: 0 0 3px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5);
+      text-shadow:
+        0 1px 2px rgba(0,0,0,0.8),
+        0 2px 4px rgba(0,0,0,0.6),
+        0 0 8px rgba(0,0,0,0.4);
       z-index: 1;
       pointer-events: none;
+      letter-spacing: 0.5px;
     }
 
     @media (orientation: portrait) {
@@ -569,15 +577,62 @@
     .color-picker-item input[type="color"] {
       width: 100%;
       height: 60px;
-      border: 2px solid #ddd;
-      border-radius: 8px;
+      border: 3px solid #dee2e6;
+      border-radius: 12px;
       cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .color-picker-item input[type="color"]:hover {
+      border-color: #667eea;
+      box-shadow: 0 4px 8px rgba(102,126,234,0.2);
+      transform: translateY(-1px);
+    }
+
+    .color-picker-item input[type="color"]:active {
+      transform: translateY(0);
     }
 
     @media (orientation: portrait) {
       .color-picker-item input[type="color"] {
         height: 70px;
       }
+    }
+
+    .color-presets {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-preset-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 3px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: all 0.2s ease;
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+    }
+
+    .color-preset-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .color-preset-btn:active {
+      transform: scale(0.95);
+    }
+
+    .color-preset-label {
+      font-size: 13px;
+      color: #6c757d;
+      margin-bottom: 8px;
+      font-weight: 600;
     }
 
     input[type="text"], input[type="number"] {
@@ -1306,6 +1361,17 @@
             <input type="color" id="prepareColor" value="#FFFFFF">
           </div>
         </div>
+        <div class="color-preset-label">빠른 선택</div>
+        <div class="color-presets">
+          <button class="color-preset-btn" style="background: #FFA500;" onclick="setPhaseColors('prepare', '#FFA500', '#FFFFFF')" title="주황"></button>
+          <button class="color-preset-btn" style="background: #FFD700;" onclick="setPhaseColors('prepare', '#FFD700', '#000000')" title="금색"></button>
+          <button class="color-preset-btn" style="background: #4A90E2;" onclick="setPhaseColors('prepare', '#4A90E2', '#FFFFFF')" title="파랑"></button>
+          <button class="color-preset-btn" style="background: #9B59B6;" onclick="setPhaseColors('prepare', '#9B59B6', '#FFFFFF')" title="보라"></button>
+          <button class="color-preset-btn" style="background: #FF6B6B;" onclick="setPhaseColors('prepare', '#FF6B6B', '#FFFFFF')" title="연한빨강"></button>
+          <button class="color-preset-btn" style="background: #48C9B0;" onclick="setPhaseColors('prepare', '#48C9B0', '#FFFFFF')" title="청록"></button>
+          <button class="color-preset-btn" style="background: #95A5A6;" onclick="setPhaseColors('prepare', '#95A5A6', '#FFFFFF')" title="회색"></button>
+          <button class="color-preset-btn" style="background: #34495E;" onclick="setPhaseColors('prepare', '#34495E', '#FFFFFF')" title="검정회색"></button>
+        </div>
         <div class="sound-select-group">
           <div class="sound-select-item">
             <label>시작음</label>
@@ -1401,6 +1467,17 @@
             <input type="color" id="workColor" value="#FFFFFF">
           </div>
         </div>
+        <div class="color-preset-label">빠른 선택</div>
+        <div class="color-presets">
+          <button class="color-preset-btn" style="background: #FF0000;" onclick="setPhaseColors('work', '#FF0000', '#FFFFFF')" title="빨강"></button>
+          <button class="color-preset-btn" style="background: #E74C3C;" onclick="setPhaseColors('work', '#E74C3C', '#FFFFFF')" title="진한빨강"></button>
+          <button class="color-preset-btn" style="background: #FF6B9D;" onclick="setPhaseColors('work', '#FF6B9D', '#FFFFFF')" title="분홍"></button>
+          <button class="color-preset-btn" style="background: #C0392B;" onclick="setPhaseColors('work', '#C0392B', '#FFFFFF')" title="다크레드"></button>
+          <button class="color-preset-btn" style="background: #FF5722;" onclick="setPhaseColors('work', '#FF5722', '#FFFFFF')" title="오렌지레드"></button>
+          <button class="color-preset-btn" style="background: #D91E48;" onclick="setPhaseColors('work', '#D91E48', '#FFFFFF')" title="크림슨"></button>
+          <button class="color-preset-btn" style="background: #8E44AD;" onclick="setPhaseColors('work', '#8E44AD', '#FFFFFF')" title="보라"></button>
+          <button class="color-preset-btn" style="background: #2C3E50;" onclick="setPhaseColors('work', '#2C3E50', '#FFFFFF')" title="미드나잇"></button>
+        </div>
         <div class="sound-select-group">
           <div class="sound-select-item">
             <label>시작음</label>
@@ -1495,6 +1572,17 @@
             <label>글자색</label>
             <input type="color" id="restColor" value="#000000">
           </div>
+        </div>
+        <div class="color-preset-label">빠른 선택</div>
+        <div class="color-presets">
+          <button class="color-preset-btn" style="background: #00FF00;" onclick="setPhaseColors('rest', '#00FF00', '#000000')" title="초록"></button>
+          <button class="color-preset-btn" style="background: #27AE60;" onclick="setPhaseColors('rest', '#27AE60', '#FFFFFF')" title="진한초록"></button>
+          <button class="color-preset-btn" style="background: #2ECC71;" onclick="setPhaseColors('rest', '#2ECC71', '#FFFFFF')" title="에메랄드"></button>
+          <button class="color-preset-btn" style="background: #1ABC9C;" onclick="setPhaseColors('rest', '#1ABC9C', '#FFFFFF')" title="터키옥"></button>
+          <button class="color-preset-btn" style="background: #3498DB;" onclick="setPhaseColors('rest', '#3498DB', '#FFFFFF')" title="하늘"></button>
+          <button class="color-preset-btn" style="background: #5DADE2;" onclick="setPhaseColors('rest', '#5DADE2', '#FFFFFF')" title="밝은파랑"></button>
+          <button class="color-preset-btn" style="background: #16A085;" onclick="setPhaseColors('rest', '#16A085', '#FFFFFF')" title="청록"></button>
+          <button class="color-preset-btn" style="background: #52C1B5;" onclick="setPhaseColors('rest', '#52C1B5', '#FFFFFF')" title="민트"></button>
         </div>
         <div class="sound-select-group">
           <div class="sound-select-item">
@@ -2548,6 +2636,15 @@
           volume: 50
         }];
       }
+    }
+
+    // 색상 프리셋 빠른 선택 함수
+    function setPhaseColors(phase, bgColor, textColor) {
+      const bgInput = document.getElementById(`${phase}Bg`);
+      const colorInput = document.getElementById(`${phase}Color`);
+
+      if (bgInput) bgInput.value = bgColor.toUpperCase();
+      if (colorInput) colorInput.value = textColor.toUpperCase();
     }
 
     function loadSettings() {
