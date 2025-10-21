@@ -2067,7 +2067,7 @@
       timerInterval = setInterval(() => {
         if (!runningTimer.isPaused) {
           runningTimer.remainingTime--;
-          if (runningTimer.remainingTime <= 5 && runningTimer.remainingTime > 0) {
+          if (runningTimer.remainingTime === 5) {
             const phase = runningTimer.config[runningTimer.phase];
             playSound(phase.endSound, timer.volume);
             vibrate(100);
@@ -2315,6 +2315,8 @@
         document.getElementById('pauseOverlay').classList.remove('show');
         vibrate(50);
         showToast('타이머 재개');
+        // 전체화면 재진입
+        requestFullscreen();
       }
     }
 
@@ -2341,6 +2343,8 @@
           document.getElementById('pauseOverlay').classList.remove('show');
           vibrate(50);
           showToast('타이머 재개');
+          // 전체화면 재진입
+          requestFullscreen();
         }
       }
     }
