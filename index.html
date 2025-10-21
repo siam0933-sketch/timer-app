@@ -1701,7 +1701,7 @@
     });
 
     function setupEventListeners() {
-      document.getElementById('mainScreen').addEventListener('click', toggleTimerCards);
+      document.getElementById('mainScreen').addEventListener('click', handleMainScreenClick);
       document.getElementById('timerCardsOverlay').addEventListener('click', function(e) {
         if (e.target === this) hideTimerCards();
       });
@@ -1710,6 +1710,12 @@
       document.getElementById('settingsBtn').addEventListener('click', function(e) {
         e.stopPropagation();
         showGlobalSettings();
+      });
+
+      // 시계 영역 클릭 시 타이머 카드 열기
+      document.querySelector('.clock-container').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleTimerCards();
       });
       document.getElementById('pauseOverlay').addEventListener('touchstart', handleLongPressStart);
       document.getElementById('pauseOverlay').addEventListener('touchend', handleLongPressEnd);
@@ -1851,6 +1857,26 @@
       adjustClockSize();
       closeGlobalSettings();
       showToast('설정이 저장되었습니다');
+    }
+
+    function handleMainScreenClick(e) {
+      // 설정 버튼이나 시계 영역 클릭이 아닌 경우 전체화면
+      if (!e.target.closest('#settingsBtn') && !e.target.closest('.clock-container')) {
+        toggleFullscreen();
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement &&
+          !document.webkitFullscreenElement &&
+          !document.mozFullScreenElement &&
+          !document.msFullscreenElement) {
+        // 전체화면 진입
+        requestFullscreen();
+      } else {
+        // 전체화면 종료
+        exitFullscreen();
+      }
     }
 
     function toggleTimerCards() {
