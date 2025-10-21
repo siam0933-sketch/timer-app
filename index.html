@@ -1312,7 +1312,12 @@
               <option value="none">무음</option>
               <option value="default" selected>기본음</option>
               <option value="beep">삐</option>
-              <option value="bell">딩동</option>
+              <option value="bell">벨</option>
+              <option value="alarm">알람</option>
+              <option value="boxing">복싱벨</option>
+              <option value="start">시작</option>
+              <option value="wow">와우</option>
+              <option value="ac">에어컨</option>
             </select>
           </div>
           <div class="sound-select-item">
@@ -1321,7 +1326,12 @@
               <option value="none">무음</option>
               <option value="default">기본음</option>
               <option value="beep" selected>삐</option>
-              <option value="bell">딩동</option>
+              <option value="bell">벨</option>
+              <option value="alarm">알람</option>
+              <option value="boxing">복싱벨</option>
+              <option value="start">시작</option>
+              <option value="wow">와우</option>
+              <option value="ac">에어컨</option>
             </select>
           </div>
         </div>
@@ -1397,7 +1407,12 @@
               <option value="none">무음</option>
               <option value="default" selected>기본음</option>
               <option value="beep">삐</option>
-              <option value="bell">딩동</option>
+              <option value="bell">벨</option>
+              <option value="alarm">알람</option>
+              <option value="boxing">복싱벨</option>
+              <option value="start">시작</option>
+              <option value="wow">와우</option>
+              <option value="ac">에어컨</option>
             </select>
           </div>
           <div class="sound-select-item">
@@ -1406,7 +1421,12 @@
               <option value="none">무음</option>
               <option value="default">기본음</option>
               <option value="beep" selected>삐</option>
-              <option value="bell">딩동</option>
+              <option value="bell">벨</option>
+              <option value="alarm">알람</option>
+              <option value="boxing">복싱벨</option>
+              <option value="start">시작</option>
+              <option value="wow">와우</option>
+              <option value="ac">에어컨</option>
             </select>
           </div>
         </div>
@@ -1482,7 +1502,12 @@
               <option value="none">무음</option>
               <option value="default" selected>기본음</option>
               <option value="beep">삐</option>
-              <option value="bell">딩동</option>
+              <option value="bell">벨</option>
+              <option value="alarm">알람</option>
+              <option value="boxing">복싱벨</option>
+              <option value="start">시작</option>
+              <option value="wow">와우</option>
+              <option value="ac">에어컨</option>
             </select>
           </div>
           <div class="sound-select-item">
@@ -1491,7 +1516,12 @@
               <option value="none">무음</option>
               <option value="default">기본음</option>
               <option value="beep" selected>삐</option>
-              <option value="bell">딩동</option>
+              <option value="bell">벨</option>
+              <option value="alarm">알람</option>
+              <option value="boxing">복싱벨</option>
+              <option value="start">시작</option>
+              <option value="wow">와우</option>
+              <option value="ac">에어컨</option>
             </select>
           </div>
         </div>
@@ -2335,24 +2365,44 @@
     function playSound(soundType, volume) {
       if (!globalSettings.soundEnabled || soundType === 'none') return;
       const vol = volume / 100;
+
+      // 사용자 업로드 사운드 확인
       if (customSounds[soundType]) {
         playCustomSound(customSounds[soundType], volume);
         return;
       }
+
+      // sounds 폴더의 파일 확인
+      const soundFiles = {
+        'bell': './sounds/bell.mp3',
+        'alarm': './sounds/alarm.mp3',
+        'boxing': './sounds/boxing.mp3',
+        'start': './sounds/start.mp3',
+        'wow': './sounds/wow.mp3',
+        'ac': './sounds/ac.mp3'
+      };
+
+      if (soundFiles[soundType]) {
+        playAudioFile(soundFiles[soundType], volume);
+        return;
+      }
+
+      // 기본 톤 사운드 (폴백)
       switch(soundType) {
         case 'beep':
           playTone(1000, 0.3, vol);
-          break;
-        case 'bell':
-          playTone(800, 0.15, vol);
-          setTimeout(() => playTone(1000, 0.15, vol), 150);
-          setTimeout(() => playTone(800, 0.3, vol), 300);
           break;
         case 'default':
           playTone(800, 0.2, vol);
           setTimeout(() => playTone(600, 0.3, vol), 200);
           break;
       }
+    }
+
+    function playAudioFile(filePath, volume) {
+      const audio = new Audio(filePath);
+      audio.volume = volume / 100;
+      audio.play().catch(err => console.log('소리 재생 실패:', err));
     }
 
     function playCustomSound(dataUrl, volume) {
