@@ -1,11 +1,11 @@
-const CACHE_NAME = 'timer-app-v1';
+const CACHE_NAME = 'timer-app-v2';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json'
 ];
 
-// 설치 시 캐시 저장
+// 설치 시 캐시 저장 및 즉시 활성화
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -13,6 +13,7 @@ self.addEventListener('install', (event) => {
         console.log('캐시 열림');
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -27,17 +28,18 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 오래된 캐시 삭제
+// 오래된 캐시 삭제 및 즉시 제어권 획득
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('오래된 캐시 삭제:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
