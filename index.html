@@ -1013,12 +1013,23 @@
     }
 
     /* 가로 화면 대응 */
-    @media (orientation: landscape) and (max-height: 500px) {
+    @media (orientation: landscape) {
       .current-time-small {
-        font-size: clamp(50px, 10vh, 80px);
-        padding: clamp(8px, 2vh, 12px) clamp(20px, 5vw, 30px);
-        margin: 10px;
+        font-size: clamp(20px, 5vh, 80px);
+        padding-top: clamp(15px, 3vh, 25px);
+        padding-bottom: clamp(5px, 1vh, 10px);
+        padding-left: clamp(15px, 3vw, 25px);
+        padding-right: clamp(15px, 3vw, 25px);
+        margin: 0;
+        border: none !important;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
       }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
 
       #settingsBtn {
         width: clamp(25px, 6vw, 35px);
@@ -2338,6 +2349,12 @@
         if (timerPhase) timerPhase.style.fontSize = sideTextSize + 'px';
         if (timerRound) timerRound.style.fontSize = sideTextSize + 'px';
         if (timerName) timerName.style.fontSize = (sideTextSize * 0.9) + 'px';
+
+        // 가로 모드일 때 현재 시간 크기를 sideTextSize(운동 글자 크기)와 동일하게 설정
+        const currentTimeSmall = document.getElementById('currentTimeSmall');
+        if (currentTimeSmall) {
+          currentTimeSmall.style.fontSize = sideTextSize + 'px';
+        }
       }
     }
 
