@@ -1059,7 +1059,7 @@
       }
 
       #timerTime {
-        font-size: clamp(50px, 12vh, 120px);
+        font-size: clamp(60px, 28vw, 250px);
       }
 
       .timer-name {
@@ -1086,7 +1086,8 @@
       align-items: center;
       justify-content: center;
       gap: clamp(15px, 4vw, 35px);
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      width: 100%;
     }
 
     .timer-phase {
@@ -1094,6 +1095,8 @@
       font-weight: 800;
       text-shadow: 0 4px 20px rgba(0,0,0,0.2);
       letter-spacing: -1px;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     .timer-round {
@@ -1101,6 +1104,9 @@
       font-weight: 800;
       text-shadow: 0 4px 20px rgba(0,0,0,0.2);
       letter-spacing: -1px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      min-width: fit-content;
     }
 
     #timerTime {
@@ -1112,6 +1118,7 @@
       white-space: nowrap;
       overflow: visible;
       font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
     }
 
     #timerTime span {
@@ -1132,6 +1139,7 @@
       .timer-main-row {
         flex-direction: column;
         gap: clamp(20px, 4vh, 40px);
+        flex-wrap: nowrap;
       }
 
       #timerTime {
@@ -2349,12 +2357,6 @@
         if (timerPhase) timerPhase.style.fontSize = sideTextSize + 'px';
         if (timerRound) timerRound.style.fontSize = sideTextSize + 'px';
         if (timerName) timerName.style.fontSize = (sideTextSize * 0.9) + 'px';
-
-        // 가로 모드일 때 현재 시간 크기를 sideTextSize(운동 글자 크기)와 동일하게 설정
-        const currentTimeSmall = document.getElementById('currentTimeSmall');
-        if (currentTimeSmall) {
-          currentTimeSmall.style.fontSize = sideTextSize + 'px';
-        }
       }
     }
 
@@ -2667,5 +2669,6 @@
       }
     }
   </script>
+  
 </body>
 </html>
