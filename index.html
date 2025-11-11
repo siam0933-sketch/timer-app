@@ -334,28 +334,6 @@
       font-weight: 500;
     }
 
-    .card-color-samples {
-      display: flex;
-      gap: 6px;
-      width: 100%;
-      margin: 8px 0;
-    }
-
-    .color-sample {
-      flex: 1;
-      padding: 6px 4px;
-      border-radius: 8px;
-      font-size: clamp(10px, 2.5vw, 13px);
-      font-weight: 600;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      transition: transform 0.2s;
-    }
-
-    .color-sample:hover {
-      transform: scale(1.05);
-    }
-
     /* ========== 모달 ========== */
     .modal {
       display: none;
@@ -1823,27 +1801,6 @@
       document.getElementById('pauseOverlay').addEventListener('mousedown', handleLongPressStart);
       document.getElementById('pauseOverlay').addEventListener('mouseup', handleLongPressEnd);
       document.getElementById('customSoundFile').addEventListener('change', handleCustomSoundUpload);
-
-      // 색상 변경 시 실시간 카드 업데이트
-      const colorInputs = ['prepareBg', 'prepareColor', 'workBg', 'workColor', 'restBg', 'restColor'];
-      colorInputs.forEach(inputId => {
-        document.getElementById(inputId).addEventListener('input', updateCardPreview);
-      });
-    }
-
-    function updateCardPreview() {
-      const timer = timers.find(t => t.id === currentTimerId);
-      if (!timer) return;
-
-      // 현재 값으로 임시 업데이트
-      timer.prepare.bg = document.getElementById('prepareBg').value;
-      timer.prepare.color = document.getElementById('prepareColor').value;
-      timer.work.bg = document.getElementById('workBg').value;
-      timer.work.color = document.getElementById('workColor').value;
-      timer.rest.bg = document.getElementById('restBg').value;
-      timer.rest.color = document.getElementById('restColor').value;
-
-      renderCards();
     }
 
 
@@ -2040,7 +1997,7 @@
           startTimer(timer.id);
         }
       };
-      card.innerHTML = '<div class="card-header"><div class="card-name">' + timer.name + '</div><button class="card-menu-btn" onclick="event.stopPropagation(); editTimer(\'' + timer.id + '\')">⋮</button></div><div class="card-color-samples"><div class="color-sample" style="background: ' + timer.prepare.bg + '; color: ' + timer.prepare.color + ';">준비</div><div class="color-sample" style="background: ' + timer.work.bg + '; color: ' + timer.work.color + ';">운동</div><div class="color-sample" style="background: ' + timer.rest.bg + '; color: ' + timer.rest.color + ';">휴식</div></div><div class="card-info">준비: ' + timer.prepare.min + '분 ' + timer.prepare.sec + '초<br>운동: ' + timer.work.min + '분 ' + timer.work.sec + '초<br>휴식: ' + timer.rest.min + '분 ' + timer.rest.sec + '초<br>라운드: ' + timer.rounds + '</div>';
+      card.innerHTML = '<div class="card-header"><div class="card-name">' + timer.name + '</div><button class="card-menu-btn" onclick="event.stopPropagation(); editTimer(\'' + timer.id + '\')">⋮</button></div><div class="card-info">준비: ' + timer.prepare.min + '분 ' + timer.prepare.sec + '초<br>운동: ' + timer.work.min + '분 ' + timer.work.sec + '초<br>휴식: ' + timer.rest.min + '분 ' + timer.rest.sec + '초<br>라운드: ' + timer.rounds + '</div>';
       return card;
     }
 
@@ -2665,15 +2622,34 @@
       const saved = localStorage.getItem('timers');
       if (saved) {
         timers = JSON.parse(saved);
+        // 기존 타이머 색상 마이그레이션 (이전 빨강->블루, 초록->레드)
+        timers.forEach(timer => {
+          // 운동이 빨강(#FF0000)이면 블루로 변경
+          if (timer.work.bg === '#FF0000') {
+            timer.work.bg = '#2196F3';
+          }
+          // 휴식이 초록(#00FF00)이면 레드로 변경
+          if (timer.rest.bg === '#00FF00') {
+            timer.rest.bg = '#FF0000';
+            timer.rest.color = '#FFFFFF';
+          }
+          // 소리 설정이 없으면 새로운 기본값으로 설정
+          if (!timer.prepare.startSound) timer.prepare.startSound = 'none';
+          if (!timer.prepare.endSound) timer.prepare.endSound = 'default';
+          if (!timer.work.startSound) timer.work.startSound = 'none';
+          if (!timer.work.endSound) timer.work.endSound = 'default';
+          if (!timer.rest.startSound) timer.rest.startSound = 'none';
+          if (!timer.rest.endSound) timer.rest.endSound = 'default';
+        });
+        saveTimers(); // 마이그레이션 내용 저장
       } else {
         timers = [{
           id: 'timer_default',
           name: '기본 타이머',
-          prepare: { min: 0, sec: 10, bg: '#FFA500', color: '#FFFFFF', startSound: 'default', endSound: 'beep' },
-          work: { min: 0, sec: 30, bg: '#FF0000', color: '#FFFFFF', startSound: 'default', endSound: 'beep' },
-          rest: { min: 0, sec: 10, bg: '#00FF00', color: '#000000', startSound: 'default', endSound: 'beep' },
-          rounds: 3,
-          volume: 50
+          prepare: { min: 0, sec: 10, bg: '#FFA500', color: '#FFFFFF', startSound: 'none', endSound: 'default' },
+          work: { min: 0, sec: 30, bg: '#2196F3', color: '#FFFFFF', startSound: 'none', endSound: 'default' },
+          rest: { min: 0, sec: 10, bg: '#FF0000', color: '#FFFFFF', startSound: 'none', endSound: 'default' },
+          rounds: 3
         }];
       }
     }
