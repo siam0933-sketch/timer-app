@@ -1767,6 +1767,14 @@
         }, 100);
       });
 
+      // 페이지가 다시 보일 때 Wake Lock 재활성화
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && runningTimer && !runningTimer.isPaused) {
+          console.log('페이지가 다시 보임 - Wake Lock 재활성화');
+          enableWakeLock();
+        }
+      });
+
       // Service Worker 등록 (PWA)
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
@@ -2564,8 +2572,25 @@
       if (!globalSettings.keepScreenOn) return;
       try {
         if ('wakeLock' in navigator && navigator.wakeLock) {
+          // 기존 Wake Lock이 있으면 먼저 해제
+          if (wakeLock) {
+            try {
+              await wakeLock.release();
+            } catch (e) {}
+          }
+
           wakeLock = await navigator.wakeLock.request('screen');
           console.log('화면 꺼짐 방지 활성화');
+
+          // Wake Lock이 해제되었을 때 이벤트 리스너 추가
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake Lock이 해제됨');
+            wakeLock = null;
+            // 타이머가 실행 중이면 자동으로 다시 활성화
+            if (runningTimer && !runningTimer.isPaused) {
+              setTimeout(() => enableWakeLock(), 100);
+            }
+          });
         } else {
           console.log('이 브라우저는 WakeLock을 지원하지 않습니다');
         }
