@@ -1617,13 +1617,6 @@
         <input type="number" id="rounds" min="1" max="99" value="3">
       </div>
 
-      <div class="setting-section">
-        <label class="setting-label">볼륨</label>
-        <div class="slider-container">
-          <input type="range" id="volume" min="0" max="100" value="50">
-        </div>
-      </div>
-
       <div class="file-upload-section">
         <label class="setting-label">커스텀 음원 추가</label>
         <input type="file" id="customSoundFile" accept="audio/*" multiple>
@@ -2016,8 +2009,7 @@
         prepare: { min: 0, sec: 10, bg: '#FFA500', color: '#FFFFFF', startSound: 'none', endSound: 'default' },
         work: { min: 0, sec: 30, bg: '#2196F3', color: '#FFFFFF', startSound: 'none', endSound: 'default' },
         rest: { min: 0, sec: 10, bg: '#FF0000', color: '#FFFFFF', startSound: 'none', endSound: 'default' },
-        rounds: 3,
-        volume: 50
+        rounds: 3
       };
       timers.push(newTimer);
       editTimer(currentTimerId);
@@ -2066,7 +2058,6 @@
       document.getElementById('restEndSound').value = timer.rest.endSound || 'beep';
 
       document.getElementById('rounds').value = timer.rounds;
-      document.getElementById('volume').value = timer.volume;
       document.getElementById('timerSettingsModal').classList.add('show');
     }
 
@@ -2103,7 +2094,6 @@
       timer.rest.startSound = document.getElementById('restStartSound').value;
       timer.rest.endSound = document.getElementById('restEndSound').value;
       timer.rounds = parseInt(document.getElementById('rounds').value);
-      timer.volume = parseInt(document.getElementById('volume').value);
       saveTimers();
       renderCards();
       closeTimerSettings();
@@ -2146,7 +2136,7 @@
       };
       showTimerScreen();
       updateTimerDisplay();
-      playSound(timer.prepare.startSound, timer.volume);
+      playSound(timer.prepare.startSound);
       vibrate([200, 100, 200]);
       enableWakeLock();
       timerInterval = setInterval(() => {
@@ -2154,7 +2144,7 @@
           runningTimer.remainingTime--;
           if (runningTimer.remainingTime === 3) {
             const phase = runningTimer.config[runningTimer.phase];
-            playSound(phase.endSound, timer.volume);
+            playSound(phase.endSound);
             vibrate(100);
           }
           if (runningTimer.remainingTime <= 0) {
@@ -2171,19 +2161,19 @@
       if (runningTimer.phase === 'prepare') {
         runningTimer.phase = 'work';
         runningTimer.remainingTime = timer.work.min * 60 + timer.work.sec;
-        playSound(timer.work.startSound, timer.volume);
+        playSound(timer.work.startSound);
         vibrate([200, 100, 200]);
       } else if (runningTimer.phase === 'work') {
         runningTimer.phase = 'rest';
         runningTimer.remainingTime = timer.rest.min * 60 + timer.rest.sec;
-        playSound(timer.rest.startSound, timer.volume);
+        playSound(timer.rest.startSound);
         vibrate([200, 100, 200]);
       } else if (runningTimer.phase === 'rest') {
         if (runningTimer.currentRound < timer.rounds) {
           runningTimer.currentRound++;
           runningTimer.phase = 'work';
           runningTimer.remainingTime = timer.work.min * 60 + timer.work.sec;
-          playSound(timer.work.startSound, timer.volume);
+          playSound(timer.work.startSound);
           vibrate([200, 100, 200]);
         } else {
           vibrate([300, 100, 300, 100, 300]);
@@ -2478,13 +2468,13 @@
       });
     }
 
-    function playSound(soundType, volume) {
+    function playSound(soundType) {
       if (!globalSettings.soundEnabled || soundType === 'none') return;
-      const vol = volume / 100;
+      const vol = 1.0; // 고정 볼륨 100%
 
       // 사용자 업로드 사운드 확인
       if (customSounds[soundType]) {
-        playCustomSound(customSounds[soundType], volume);
+        playCustomSound(customSounds[soundType]);
         return;
       }
 
@@ -2499,7 +2489,7 @@
       };
 
       if (soundFiles[soundType]) {
-        playAudioFile(soundFiles[soundType], volume);
+        playAudioFile(soundFiles[soundType]);
         return;
       }
 
@@ -2515,25 +2505,25 @@
       }
     }
 
-    function playAudioFile(filePath, volume) {
+    function playAudioFile(filePath) {
       // 이전 오디오 정지
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
       currentAudio = new Audio(filePath);
-      currentAudio.volume = volume / 100;
+      currentAudio.volume = 1.0; // 고정 볼륨 100%
       currentAudio.play().catch(err => console.log('소리 재생 실패:', err));
     }
 
-    function playCustomSound(dataUrl, volume) {
+    function playCustomSound(dataUrl) {
       // 이전 오디오 정지
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
       currentAudio = new Audio(dataUrl);
-      currentAudio.volume = volume / 100;
+      currentAudio.volume = 1.0; // 고정 볼륨 100%
       currentAudio.play().catch(err => console.log('소리 재생 실패:', err));
     }
 
