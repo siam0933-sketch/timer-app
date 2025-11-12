@@ -1811,6 +1811,21 @@
       document.getElementById('pauseOverlay').addEventListener('mousedown', handleLongPressStart);
       document.getElementById('pauseOverlay').addEventListener('mouseup', handleLongPressEnd);
       document.getElementById('customSoundFile').addEventListener('change', handleCustomSoundUpload);
+
+      // 벨소리 선택 시 미리듣기
+      const soundSelects = [
+        'prepareStartSound', 'prepareEndSound',
+        'workStartSound', 'workEndSound',
+        'restStartSound', 'restEndSound'
+      ];
+      soundSelects.forEach(selectId => {
+        document.getElementById(selectId).addEventListener('change', function(e) {
+          const soundType = e.target.value;
+          if (soundType !== 'none') {
+            playSound(soundType);
+          }
+        });
+      });
     }
 
 
@@ -2479,8 +2494,17 @@
     }
 
     function playSound(soundType) {
-      if (!globalSettings.soundEnabled || soundType === 'none') return;
+      if (soundType === 'none') return;
       const vol = 1.0; // 고정 볼륨 100%
+
+      // AudioContext 초기화 (사용자 인터랙션으로 활성화)
+      if (!audioContext) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (err) {
+          console.log('AudioContext 초기화 실패:', err);
+        }
+      }
 
       // 사용자 업로드 사운드 확인
       if (customSounds[soundType]) {
