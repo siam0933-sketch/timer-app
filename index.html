@@ -1882,13 +1882,11 @@
     function adjustClockSize() {
       const clockContainer = document.querySelector('.clock-container');
       const timeDisplay = document.getElementById('timeDisplay');
-      const dateDisplay = document.getElementById('dateDisplay');
 
-      if (!clockContainer || !timeDisplay || !dateDisplay) return;
+      if (!clockContainer || !timeDisplay) return;
 
       // 시계 내용의 전체 텍스트 길이 계산 (AM/PM HH:MM SS 형식)
       const timeText = timeDisplay.textContent || 'AM 12:00 00';
-      const dateText = dateDisplay.textContent || '2024.01.01 월요일';
 
       // 컨테이너의 가용 너비 (90vw, 패딩 고려)
       const containerWidth = window.innerWidth * 0.9 - 40; // padding 20px * 2
@@ -1918,11 +1916,7 @@
         const timeWidth = tempTime.offsetWidth;
         const timeHeight = tempTime.offsetHeight;
 
-        // 날짜는 시간의 30% 크기
-        const dateHeight = midSize * 0.3;
-        const totalHeight = timeHeight + dateHeight + 15; // 15px margin
-
-        if (timeWidth <= containerWidth && totalHeight <= containerHeight) {
+        if (timeWidth <= containerWidth && timeHeight <= containerHeight) {
           optimalSize = midSize;
           minSize = midSize + 1;
         } else {
@@ -1932,9 +1926,9 @@
 
       document.body.removeChild(tempTime);
 
-      // 최종 크기 적용
+      // 최종 크기 적용 (시간 표시만)
       timeDisplay.style.fontSize = optimalSize + 'px';
-      dateDisplay.style.fontSize = (optimalSize * 0.3) + 'px';
+      // 날짜 표시는 CSS로만 제어 (독립적으로 위치하므로)
     }
 
     function applyGlobalSettings() {
