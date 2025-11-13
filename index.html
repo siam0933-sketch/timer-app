@@ -62,8 +62,8 @@
       position: absolute;
       top: min(5vw, 30px);
       right: min(5vw, 30px);
-      width: clamp(100px, 24vw, 140px);
-      height: clamp(100px, 24vw, 140px);
+      width: clamp(50px, 12vw, 70px);
+      height: clamp(50px, 12vw, 70px);
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.25);
@@ -76,21 +76,14 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      gap: clamp(4px, 1vw, 6px);
-      padding: clamp(12px, 3vw, 16px);
+      gap: clamp(2px, 0.5vw, 3px);
+      padding: clamp(6px, 1.5vw, 8px);
       box-sizing: border-box;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #settingsBtn.show {
-      opacity: 1;
-      pointer-events: auto;
     }
 
     #settingsBtn .hamburger-line {
       width: 100%;
-      height: clamp(6px, 1.4vw, 8px);
+      height: clamp(3px, 0.7vw, 4px);
       background: white;
       border-radius: 2px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1819,6 +1812,8 @@
         applyGlobalSettings();
         adjustClockSize();
       }, 100);
+      // 메인화면에서도 화면꺼짐 방지 활성화
+      enableWakeLock();
       // AudioContext는 사용자 인터랙션 후에 초기화
 
       // 화면 크기 변경 시 시계 크기 재조정
@@ -1867,6 +1862,9 @@
       document.getElementById('pauseOverlay').addEventListener('click', handlePauseOverlayClick);
       document.getElementById('settingsBtn').addEventListener('click', function(e) {
         e.stopPropagation();
+        // 타이머 카드만 닫기
+        document.getElementById('timerCardsOverlay').classList.remove('show');
+        // 설정 열기
         showGlobalSettings();
       });
 
@@ -2063,12 +2061,10 @@
 
     function showTimerCards() {
       document.getElementById('timerCardsOverlay').classList.add('show');
-      document.getElementById('settingsBtn').classList.add('show');
     }
 
     function hideTimerCards() {
       document.getElementById('timerCardsOverlay').classList.remove('show');
-      document.getElementById('settingsBtn').classList.remove('show');
     }
 
     function renderCards() {
