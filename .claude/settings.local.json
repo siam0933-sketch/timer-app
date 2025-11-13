@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\n타이머 가로 모드 시계 크기 확대 및 레이아웃 안정성 개선\n\n- 가로 모드 시계 크기를 화면 너비 기준으로 대폭 확대 (12vh → 28vw, 최대 250px)\n- 라운드 숫자 10 이상일 때 줄바꿈 방지 (flex-wrap: nowrap)\n- 타이머 요소들이 축소되지 않도록 flex-shrink: 0 설정\n- white-space: nowrap으로 텍스트 줄바꿈 방지\n- 타이머가 항상 화면 정중앙에 고정되도록 레이아웃 개선\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push)",
+      "Bash(gh repo view:*)",
+      "Bash(git remote:*)",
+      "Bash(git commit:*)",
+      "Bash(git revert:*)",
+      "WebFetch(domain:code.claude.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
